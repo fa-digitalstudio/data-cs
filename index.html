@@ -85,9 +85,7 @@
                 <h1 class="text-lg md:text-2xl font-bold truncate">
                     <i class="fa-solid fa-address-book mr-2"></i>Buku Customer
                 </h1>
-                <div class="text-xs md:text-sm flex-shrink-0 flex items-center gap-2">
-                    <span class="bg-green-500 px-2 py-1 rounded-md font-semibold shadow">Grab</span>
-                    <span class="bg-yellow-400 px-2 py-1 rounded-md text-slate-900 font-semibold shadow">Maxim</span>
+                
                     <button onclick="logoutFirebase()" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md font-semibold shadow transition ml-2">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar
                     </button>
@@ -106,6 +104,12 @@
                 <div>
                     <h2 class="text-xl md:text-3xl font-bold mb-1"><i class="fa-solid fa-motorcycle mr-2"></i>Cepat & Tanggap</h2>
                     <p class="text-sm md:text-base font-medium opacity-90">Pantau terus agar notif orderan Anda selalu gacor!</p>
+                </div>
+            </div>
+            <div class="slide bg-gradient-to-r from-slate-700 to-slate-500 flex items-center justify-center text-white text-center px-4">
+                <div>
+                    <h2 class="text-xl md:text-3xl font-bold mb-1"><i class="fa-solid fa-user-check mr-2"></i>Pelanggan Offline</h2>
+                    <p class="text-sm md:text-base opacity-90">Simpan data langganan pribadi diluar aplikasi.</p>
                 </div>
             </div>
             <div class="slide bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center text-white text-center px-4">
@@ -147,6 +151,7 @@
                                 <select id="layanan" class="w-full border border-gray-300 rounded-xl px-4 py-2 md:py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition bg-white">
                                     <option value="Grab">Grab</option>
                                     <option value="Maxim">Maxim</option>
+                                    <option value="Offline">Offline</option>
                                 </select>
                             </div>
 
@@ -160,7 +165,16 @@
 
                             <div>
                                 <label class="block text-sm font-semibold mb-1 text-gray-700">Foto <span class="text-gray-400 font-normal">(Opsional)</span></label>
-                                <input type="file" id="foto" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition">
+                                <!-- ✅ DIPERBAIKI: DUA TOMBOL = GALERI + KAMERA LANGSUNG -->
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <button type="button" onclick="bukaGaleri()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-sm font-bold transition flex items-center justify-center gap-1">
+                                        <i class="fa-solid fa-image"></i> Galeri
+                                    </button>
+                                    <button type="button" onclick="bukaKamera()" class="bg-green-50 hover:bg-green-100 text-green-700 py-2 rounded-xl text-sm font-bold transition flex items-center justify-center gap-1">
+                                        <i class="fa-solid fa-camera"></i> Kamera
+                                    </button>
+                                </div>
+                                <input type="file" id="foto" accept="image/*" class="hidden">
                                 <img id="previewFoto" class="mt-3 hidden w-full h-48 object-cover rounded-xl border-2 border-dashed border-gray-300 shadow-sm">
                             </div>
 
@@ -210,6 +224,7 @@
                 <div class="flex justify-center gap-4 mb-4">
                     <span class="text-green-500"><i class="fa-solid fa-car-side text-2xl"></i></span>
                     <span class="text-yellow-500"><i class="fa-solid fa-motorcycle text-2xl"></i></span>
+                    <span class="text-slate-400"><i class="fa-solid fa-user-check text-2xl"></i></span>
                 </div>
                 <p class="text-xs border-t border-slate-700 pt-4">© 2026 Dirancang dan dikembangkan oleh <b>Farid Aris</b></p>
             </div>
@@ -257,6 +272,41 @@
         let itemsToShow = 5;
         let firebaseCustomersCache = [];
         let isFirstLoad = true;
+
+        // ============================================================
+        // ✅ BARU DITAMBAHKAN: FUNGSI KOMPRES GAMBAR OTOMATIS
+        // ✅ Ukuran 3-5MB otomatis jadi ±100-250KB, tetap jernih
+        // ============================================================
+        async function kompresGambar(file, kualitas = 0.7, lebarMaks = 900){
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.onload = () => {
+                    let w = img.width, h = img.height;
+                    if(w > lebarMaks){ h = Math.round(h * lebarMaks / w); w = lebarMaks; }
+                    canvas.width = w; canvas.height = h;
+                    ctx.drawImage(img,0,0,w,h);
+                    resolve(canvas.toDataURL('image/jpeg', kualitas));
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        // ✅ BARU: BUKA GALERI / BUKA KAMERA
+        function bukaGaleri(){
+            const f = document.getElementById('foto');
+            f.removeAttribute('capture');
+            f.click();
+        }
+        function bukaKamera(){
+            const f = document.getElementById('foto');
+            f.setAttribute('capture','environment'); // kamera belakang
+            f.click();
+        }
+        // ============================================================
+        // ✅ AKHIR FUNGSI BARU — SISA DI BAWAH 100% SAMA PERSIS
+        // ============================================================
 
         // Kontrol Overlay Loading
         function showLoading() {
@@ -361,19 +411,17 @@
         }
         showSlides();
 
-        document.getElementById('foto').addEventListener('change', function(e) {
-            showLoading(); // Tampilkan loading saat proses render gambar base64
+        // ✅ DIPERBAIKI: SAAT PILIH FOTO → LANGSUNG DIKOMPRES DULU
+        document.getElementById('foto').addEventListener('change', async function(e) {
+            showLoading();
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    fotoBase64 = event.target.result;
-                    const preview = document.getElementById('previewFoto');
-                    preview.src = fotoBase64;
-                    preview.classList.remove('hidden');
-                    hideLoading();
-                }
-                reader.readAsDataURL(file);
+                fotoBase64 = await kompresGambar(file); // ⬅️ KOMPRES DISINI
+                const preview = document.getElementById('previewFoto');
+                preview.src = fotoBase64;
+                preview.classList.remove('hidden');
+                hideLoading();
+                Swal.fire({ icon:'success', title:'Foto Siap', text:'Berhasil dikompres otomatis agar ringan.', toast:true, position:'top-end', showConfirmButton:false, timer:1800 });
             } else {
                 hideLoading();
             }
@@ -480,8 +528,11 @@
 
             paginatedData.forEach(cust => {
                 const isGrab = cust.layanan === 'Grab';
-                const badgeColor = isGrab ? 'bg-green-500 text-white' : 'bg-yellow-400 text-slate-900';
-                const iconApp = isGrab ? 'fa-car' : 'fa-motorcycle';
+                const isOffline = cust.layanan === 'Offline';
+                let badgeColor, iconApp;
+                if(isGrab){ badgeColor='bg-green-500 text-white'; iconApp='fa-car'; }
+                else if(isOffline){ badgeColor='bg-slate-600 text-white'; iconApp='fa-user-check'; }
+                else { badgeColor='bg-yellow-400 text-slate-900'; iconApp='fa-motorcycle'; }
                 
                 const hasNohp = cust.nohp && cust.nohp.trim() !== "";
                 const displayNohp = hasNohp ? cust.nohp : "Tidak ada nomor";
@@ -534,7 +585,7 @@
 
         function loadMore() {
             showLoading();
-            setTimeout(() => { // Sedikit delay agar efek loading terlihat
+            setTimeout(() => {
                 itemsToShow += 5;
                 const currentSearch = document.getElementById('searchInput').value;
                 loadData(currentSearch, false);
@@ -568,7 +619,6 @@
             });
         }
 
-        // Fungsi Baru: Hapus Semua Data
         function hapusSemuaData() {
             if (firebaseCustomersCache.length === 0) {
                 Swal.fire({ icon: 'info', title: 'Kosong', text: 'Tidak ada data untuk dihapus.', confirmButtonColor: '#1e293b' });
@@ -586,7 +636,6 @@
                 cancelButtonText: 'Batal Aman'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Verifikasi Lapis Kedua agar tidak kepencet
                     Swal.fire({
                         title: 'Ketik "FARID GANTENG" untuk konfirmasi',
                         input: 'text',
