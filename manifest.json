@@ -1,0 +1,21 @@
+{
+  "name": "Sistem Data Customer Driver",
+  "short_name": "Buku Customer",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#1e293b",
+  "description": "Aplikasi pengelola data pelanggan untuk driver",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
