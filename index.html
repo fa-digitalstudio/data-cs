@@ -588,7 +588,7 @@
                 if (result.isConfirmed) {
                     // Verifikasi Lapis Kedua agar tidak kepencet
                     Swal.fire({
-                        title: 'Ketik "HAPUS" untuk konfirmasi',
+                        title: 'Ketik "FARID GANTENG" untuk konfirmasi',
                         input: 'text',
                         inputAttributes: { autocapitalize: 'off' },
                         showCancelButton: true,
@@ -596,7 +596,7 @@
                         showLoaderOnConfirm: true,
                         confirmButtonColor: '#ef4444',
                         preConfirm: (text) => {
-                            if (text !== 'HAPUS' && text !== 'hapus') { Swal.showValidationMessage('Teks tidak cocok. Dibatalkan.'); }
+                            if (text !== 'FARID GANTENG' && text !== 'FARID GANTENG') { Swal.showValidationMessage('Teks tidak cocok. Dibatalkan.'); }
                         },
                         allowOutsideClick: () => !Swal.isLoading()
                     }).then((finalResult) => {
