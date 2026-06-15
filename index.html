@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Data Customer Driver</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        .card-hover { transition: transform 0.2s ease-in-out; }
+        .card-hover:hover { transform: translateY(-5px); }
+        
+        /* Animasi Tulisan Berjalan */
+        .marquee-container { overflow: hidden; white-space: nowrap; width: 100%; }
+        .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; }
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+
+        /* Animasi Banner Slider */
+        .slide { opacity: 0; transition: opacity 0.8s ease-in-out; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; }
+        .slide.active { opacity: 1; z-index: 10; }
+
+        /* Animasi Modal / Pop-up */
+        .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Custom SweetAlert2 Styling agar serasi dengan Tailwind */
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color: #1e293b !important; border-radius: 0.75rem; }
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { background-color: #ef4444 !important; border-radius: 0.75rem; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col relative">
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] hidden flex-col items-center justify-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-4"></div>
+        <p class="text-white font-semibold animate-pulse tracking-wider">Memproses Data...</p>
+    </div>
+
+    <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border-t-4 border-slate-800">
+            <div class="text-center mb-6">
+                <div class="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-800 text-2xl shadow-inner">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Masuk Sistem Driver</h2>
+                <p class="text-gray-500 text-sm mt-1">Silakan masukkan akun Firebase Anda</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">Email</label>
+                    <input type="email" id="loginEmail" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="driver@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">Password</label>
+                    <div class="relative">
+                        <input type="password" id="loginPassword" required class="w-full border border-gray-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="••••••••">
+                        <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 px-4 text-gray-500 hover:text-slate-800 transition flex items-center">
+                            <i id="eyeIcon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2 mt-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> Masuk Aplikasi
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="appContent" class="hidden flex-col flex-grow">
+        
+        <header class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <h1 class="text-lg md:text-2xl font-bold truncate">
+                    <i class="fa-solid fa-address-book mr-2"></i>Buku Customer
+                </h1>
+                <div class="text-xs md:text-sm flex-shrink-0 flex items-center gap-2">
+                    <span class="bg-green-500 px-2 py-1 rounded-md font-semibold shadow">Grab</span>
+                    <span class="bg-yellow-400 px-2 py-1 rounded-md text-slate-900 font-semibold shadow">Maxim</span>
+                    <button onclick="logoutFirebase()" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md font-semibold shadow transition ml-2">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="relative w-full h-32 md:h-48 bg-gray-200 overflow-hidden shadow-inner">
+            <div class="slide active bg-gradient-to-r from-green-600 to-green-400 flex items-center justify-center text-white text-center px-4">
+                <div>
+                    <h2 class="text-xl md:text-3xl font-bold mb-1"><i class="fa-solid fa-car-side mr-2"></i>Layanan Bintang 5</h2>
+                    <p class="text-sm md:text-base opacity-90">Prioritaskan kenyamanan penumpang di setiap perjalanan.</p>
+                </div>
+            </div>
+            <div class="slide bg-gradient-to-r from-yellow-500 to-yellow-300 flex items-center justify-center text-slate-900 text-center px-4">
+                <div>
+                    <h2 class="text-xl md:text-3xl font-bold mb-1"><i class="fa-solid fa-motorcycle mr-2"></i>Cepat & Tanggap</h2>
+                    <p class="text-sm md:text-base font-medium opacity-90">Pantau terus agar notif orderan Anda selalu gacor!</p>
+                </div>
+            </div>
+            <div class="slide bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center text-white text-center px-4">
+                <div>
+                    <h2 class="text-xl md:text-3xl font-bold mb-1"><i class="fa-solid fa-database mr-2"></i>Database Aman</h2>
+                    <p class="text-sm md:text-base opacity-90">Semua data tersimpan otomatis di cloud.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 text-green-400 py-2 border-b-4 border-green-500 text-sm font-semibold shadow-md">
+            <div class="marquee-container">
+                <div class="marquee-content">
+                    <i class="fa-solid fa-bell mr-2"></i> Selamat Datang! Pastikan GPS selalu aktif. Jaga performa akun dan pastikan pelanggan merasa aman. Semoga rezeki hari ini lancar dan notif orderan terus berbunyi! <i class="fa-solid fa-bolt ml-2 text-yellow-400"></i>
+                </div>
+            </div>
+        </div>
+
+        <main class="container mx-auto px-4 py-6 max-w-7xl flex-grow">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-lg p-5 md:p-6 border-t-4 border-slate-800">
+                        <h2 class="text-lg font-bold mb-4 border-b pb-2 flex items-center"><i class="fa-solid fa-user-plus mr-2 text-slate-600"></i>Tambah Data</h2>
+                        
+                        <form id="customerForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold mb-1 text-gray-700">Nama Lengkap</label>
+                                <input type="text" id="nama" required class="w-full border border-gray-300 rounded-xl px-4 py-2 md:py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition" placeholder="Masukkan nama...">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold mb-1 text-gray-700">No. Handphone <span class="text-gray-400 font-normal">(Opsional)</span></label>
+                                <input type="tel" id="nohp" class="w-full border border-gray-300 rounded-xl px-4 py-2 md:py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition" placeholder="08xx-xxxx-xxxx">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold mb-1 text-gray-700">Layanan</label>
+                                <select id="layanan" class="w-full border border-gray-300 rounded-xl px-4 py-2 md:py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition bg-white">
+                                    <option value="Grab">Grab</option>
+                                    <option value="Maxim">Maxim</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold mb-1 text-gray-700">Lokasi Penjemputan</label>
+                                <button type="button" onclick="getLocation()" class="mb-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 px-3 py-2 rounded-xl text-sm font-bold transition w-full shadow-sm flex justify-center items-center gap-2">
+                                    <i class="fa-solid fa-location-crosshairs"></i> Deteksi Titik GPS
+                                </button>
+                                <textarea id="lokasi" required rows="2" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition" placeholder="Contoh: Jl. Pemuda (Pagar Hitam)"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold mb-1 text-gray-700">Foto <span class="text-gray-400 font-normal">(Opsional)</span></label>
+                                <input type="file" id="foto" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition">
+                                <img id="previewFoto" class="mt-3 hidden w-full h-48 object-cover rounded-xl border-2 border-dashed border-gray-300 shadow-sm">
+                            </div>
+
+                            <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 md:py-4 px-4 rounded-xl transition shadow-lg flex justify-center items-center gap-2 text-lg">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Data
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 flex flex-col">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-users-rectangle mr-2"></i>Daftar Customer</h2>
+                            <span id="totalData" class="bg-slate-800 text-white px-3 py-1 rounded-full text-xs md:text-sm font-bold shadow">0 Data Terditeksi</span>
+                        </div>
+                        <button onclick="hapusSemuaData()" class="w-full md:w-auto bg-red-100 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 px-4 py-2 rounded-xl text-sm font-bold transition shadow-sm flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-dumpster-fire"></i> Hapus Semua
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="relative shadow-sm rounded-xl">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4">
+                                <i class="fa-solid fa-search text-gray-400"></i>
+                            </span>
+                            <input type="text" id="searchInput" class="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 md:py-4 focus:outline-none focus:ring-2 focus:ring-green-500 transition text-sm md:text-base" placeholder="Cari nama, no hp, lokasi...">
+                        </div>
+                    </div>
+                    
+                    <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 flex-grow content-start"></div>
+
+                    <div id="loadMoreContainer" class="mt-6 text-center hidden">
+                        <button onclick="loadMore()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full transition shadow-sm border border-gray-300">
+                            <i class="fa-solid fa-chevron-down mr-2"></i>Tampilkan Lebih Banyak
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <footer class="bg-slate-900 text-gray-400 py-6 mt-8 border-t border-slate-700">
+            <div class="container mx-auto px-4 text-center">
+                <h3 class="text-white font-bold text-lg mb-2"><i class="fa-solid fa-shield-halved mr-2"></i>Sistem Manajemen Customer Pribadi</h3>
+                <p class="text-sm mb-4">Aplikasi pengelolaan data terintegrasi cloud menggunakan Firebase Realtime Database.</p>
+                <div class="flex justify-center gap-4 mb-4">
+                    <span class="text-green-500"><i class="fa-solid fa-car-side text-2xl"></i></span>
+                    <span class="text-yellow-500"><i class="fa-solid fa-motorcycle text-2xl"></i></span>
+                </div>
+                <p class="text-xs border-t border-slate-700 pt-4">© 2026 Dirancang dan dikembangkan oleh <b>Farid Aris</b></p>
+            </div>
+        </footer>
+    </div>
+
+    <div id="waModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="relative">
+                <img id="modalFoto" src="" class="w-full h-64 object-cover" alt="Foto Customer">
+                <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/50 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                    <h3 id="modalNama" class="text-white text-xl font-bold truncate"></h3>
+                    <p id="modalLayanan" class="text-gray-200 text-sm font-semibold"></p>
+                </div>
+            </div>
+            <div class="p-5 text-center">
+                <p class="text-gray-600 text-sm mb-4 font-medium"><i class="fa-solid fa-phone mr-1"></i> <span id="modalNoHP"></span></p>
+                
+                <a id="modalBtnWA" href="#" target="_blank" class="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-xl"></i> Chat WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
+          authDomain: "datacsgm.firebaseapp.com",
+          projectId: "datacsgm",
+          databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app", 
+          storageBucket: "datacsgm.firebasestorage.app",
+          messagingSenderId: "370220756586",
+          appId: "1:370220756586:web:f1188256adb659aaee2413"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let fotoBase64 = "";
+        let itemsToShow = 5;
+        let firebaseCustomersCache = [];
+        let isFirstLoad = true;
+
+        // Kontrol Overlay Loading
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loadingOverlay').classList.add('flex');
+        }
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.getElementById('loadingOverlay').classList.remove('flex');
+        }
+
+        // Toggle Tampilkan Password
+        function togglePassword() {
+            const passInput = document.getElementById('loginPassword');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        auth.onAuthStateChanged(user => {
+            const loginScreen = document.getElementById('loginScreen');
+            const appContent = document.getElementById('appContent');
+            
+            if (user) {
+                loginScreen.classList.add('hidden');
+                appContent.classList.remove('hidden');
+                appContent.classList.add('flex');
+                if (isFirstLoad) showLoading();
+                startRealtimeListener();
+            } else {
+                loginScreen.classList.remove('hidden');
+                appContent.classList.add('hidden');
+                appContent.classList.remove('flex');
+                hideLoading();
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showLoading();
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPassword').value;
+
+            auth.signInWithEmailAndPassword(email, pass)
+                .catch(error => {
+                    hideLoading();
+                    Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: 'Kredensial salah atau bermasalah: ' + error.message, confirmButtonColor: '#1e293b' });
+                });
+        });
+
+        function logoutFirebase() {
+            Swal.fire({
+                title: 'Keluar Aplikasi?',
+                text: "Anda harus login kembali untuk mengakses data.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1e293b',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Ya, Keluar!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showLoading();
+                    auth.signOut().then(() => hideLoading());
+                }
+            });
+        }
+
+        function startRealtimeListener() {
+            database.ref('customers').on('value', (snapshot) => {
+                firebaseCustomersCache = [];
+                snapshot.forEach((childSnapshot) => {
+                    firebaseCustomersCache.push(childSnapshot.val());
+                });
+                
+                const currentSearch = document.getElementById('searchInput').value;
+                loadData(currentSearch, false);
+                
+                if (isFirstLoad) {
+                    hideLoading();
+                    isFirstLoad = false;
+                }
+            });
+        }
+
+        let slideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        function showSlides() {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slideIndex++;
+            if (slideIndex > slides.length) { slideIndex = 1; }
+            slides[slideIndex - 1].classList.add('active');
+            setTimeout(showSlides, 4000);
+        }
+        showSlides();
+
+        document.getElementById('foto').addEventListener('change', function(e) {
+            showLoading(); // Tampilkan loading saat proses render gambar base64
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    fotoBase64 = event.target.result;
+                    const preview = document.getElementById('previewFoto');
+                    preview.src = fotoBase64;
+                    preview.classList.remove('hidden');
+                    hideLoading();
+                }
+                reader.readAsDataURL(file);
+            } else {
+                hideLoading();
+            }
+        });
+
+        function getLocation() {
+            showLoading();
+            const lokasiInput = document.getElementById('lokasi');
+            lokasiInput.value = "Mencari titik koordinat...";
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        lokasiInput.value = `${lat}, ${lon}\nDetail Alamat: `;
+                        hideLoading();
+                        Swal.fire({ icon: 'success', title: 'GPS Ditemukan', text: 'Koordinat berhasil ditarik.', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                    },
+                    function(error) {
+                        lokasiInput.value = "";
+                        hideLoading();
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Pastikan GPS Anda aktif dan berikan izin lokasi pada browser.', confirmButtonColor: '#1e293b' });
+                    }
+                );
+            } else { 
+                hideLoading();
+                Swal.fire({ icon: 'info', title: 'Tidak Didukung', text: 'Browser Anda tidak mendukung fitur lokasi.', confirmButtonColor: '#1e293b' });
+            }
+        }
+
+        function formatWA(nohp) {
+            if(!nohp) return "";
+            let cleaned = nohp.replace(/\D/g, ''); 
+            if(cleaned.startsWith('0')) {
+                cleaned = '62' + cleaned.substring(1);
+            } else if (cleaned.startsWith('8')) {
+                cleaned = '62' + cleaned;
+            }
+            return cleaned;
+        }
+
+        document.getElementById('customerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showLoading();
+            const nama = document.getElementById('nama').value;
+            const nohp = document.getElementById('nohp').value; 
+            const layanan = document.getElementById('layanan').value;
+            const lokasi = document.getElementById('lokasi').value;
+            const finalFoto = fotoBase64 || "https://via.placeholder.com/400x400?text=Tanpa+Foto";
+
+            const customerId = Date.now();
+            const customerData = { id: customerId, nama, nohp, layanan, lokasi, foto: finalFoto };
+
+            database.ref('customers/' + customerId).set(customerData)
+                .then(() => {
+                    this.reset();
+                    fotoBase64 = "";
+                    document.getElementById('previewFoto').classList.add('hidden');
+                    hideLoading();
+                    Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data Customer disimpan ke Cloud.', confirmButtonColor: '#1e293b' });
+                    loadData("", true);
+                })
+                .catch(err => {
+                    hideLoading();
+                    Swal.fire({ icon: 'error', title: 'Gagal Menyimpan', text: err.message, confirmButtonColor: '#1e293b' });
+                });
+        });
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            loadData(e.target.value, true);
+        });
+
+        function loadData(searchQuery = "", resetPagination = false) {
+            if (resetPagination) itemsToShow = 5;
+
+            const container = document.getElementById('dataContainer');
+            const loadMoreBtn = document.getElementById('loadMoreContainer');
+            const totalDataInfo = document.getElementById('totalData');
+            
+            let customers = [...firebaseCustomersCache];
+            customers.reverse(); 
+            
+            if (searchQuery.trim() !== "") {
+                const query = searchQuery.toLowerCase();
+                customers = customers.filter(cust => 
+                    cust.nama.toLowerCase().includes(query) ||
+                    (cust.nohp && cust.nohp.toLowerCase().includes(query)) ||
+                    cust.lokasi.toLowerCase().includes(query) ||
+                    cust.layanan.toLowerCase().includes(query)
+                );
+            }
+
+            totalDataInfo.innerText = `${customers.length} Data Terditeksi`;
+            container.innerHTML = "";
+
+            if(customers.length === 0) {
+                loadMoreBtn.classList.add('hidden');
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm border"><i class="fa-solid fa-box-open text-5xl mb-3 text-gray-300"></i><p class="font-medium">Tidak ada data ditemukan.</p></div>`;
+                return;
+            }
+
+            const paginatedData = customers.slice(0, itemsToShow);
+
+            paginatedData.forEach(cust => {
+                const isGrab = cust.layanan === 'Grab';
+                const badgeColor = isGrab ? 'bg-green-500 text-white' : 'bg-yellow-400 text-slate-900';
+                const iconApp = isGrab ? 'fa-car' : 'fa-motorcycle';
+                
+                const hasNohp = cust.nohp && cust.nohp.trim() !== "";
+                const displayNohp = hasNohp ? cust.nohp : "Tidak ada nomor";
+                
+                const mapsLink = `https://maps.google.com/?q=${encodeURIComponent(cust.lokasi)}`;
+
+                const phoneHtml = hasNohp 
+                    ? `<button onclick="openModal(${cust.id})" class="text-blue-600 font-semibold hover:text-blue-800 transition flex items-center bg-blue-50 px-2 py-1 rounded-md text-sm"><i class="fa-solid fa-phone mr-2"></i> ${displayNohp} <i class="fa-solid fa-arrow-up-right-from-square ml-2 text-xs"></i></button>`
+                    : `<span class="text-gray-400 text-sm flex items-center"><i class="fa-solid fa-phone-slash mr-2"></i> ${displayNohp}</span>`;
+
+                const card = `
+                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 p-4 md:p-5 card-hover flex flex-col justify-between relative overflow-hidden">
+                        <div class="flex items-start gap-4">
+                            <img src="${cust.foto}" alt="Foto ${cust.nama}" class="w-16 h-16 md:w-20 md:h-20 rounded-xl object-cover border-2 border-gray-100 shadow-sm flex-shrink-0 cursor-pointer" onclick="${hasNohp ? `openModal(${cust.id})` : ''}">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h3 class="font-bold text-lg text-gray-800 leading-tight truncate">${cust.nama}</h3>
+                                    <span class="${badgeColor} text-[10px] md:text-xs font-bold px-2 py-1 rounded-md shadow-sm whitespace-nowrap">
+                                        <i class="fa-solid ${iconApp} mr-1"></i>${cust.layanan}
+                                    </span>
+                                </div>
+                                <div class="mt-2">${phoneHtml}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 bg-gray-50 p-3 rounded-xl text-sm border border-gray-100">
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="font-bold text-[11px] text-gray-500 tracking-wider">LOKASI:</p>
+                                <a href="${mapsLink}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline text-[11px] font-bold flex items-center">
+                                    <i class="fa-solid fa-map-location-dot mr-1"></i> Buka Maps
+                                </a>
+                            </div>
+                            <p class="whitespace-pre-line text-gray-700 line-clamp-2 md:line-clamp-3">${cust.lokasi}</p>
+                        </div>
+                        
+                        <button onclick="hapusData(${cust.id})" class="mt-3 w-full text-red-500 hover:bg-red-50 py-2 rounded-xl text-sm font-bold transition border border-transparent hover:border-red-200 flex justify-center items-center gap-1">
+                            <i class="fa-solid fa-trash-can"></i> Hapus Data
+                        </button>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+
+            if (itemsToShow < customers.length) {
+                loadMoreBtn.classList.remove('hidden');
+            } else {
+                loadMoreBtn.classList.add('hidden');
+            }
+        }
+
+        function loadMore() {
+            showLoading();
+            setTimeout(() => { // Sedikit delay agar efek loading terlihat
+                itemsToShow += 5;
+                const currentSearch = document.getElementById('searchInput').value;
+                loadData(currentSearch, false);
+                hideLoading();
+            }, 300);
+        }
+
+        function hapusData(id) {
+            Swal.fire({
+                title: 'Hapus Customer?',
+                text: "Data ini akan terhapus permanen dari database cloud!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fa-solid fa-trash-can"></i> Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showLoading();
+                    database.ref('customers/' + id).remove()
+                        .then(() => {
+                            hideLoading();
+                            Swal.fire({ icon: 'success', title: 'Terhapus!', text: 'Data pelanggan berhasil dihapus.', confirmButtonColor: '#1e293b' });
+                        })
+                        .catch(err => {
+                            hideLoading();
+                            Swal.fire({ icon: 'error', title: 'Gagal', text: err.message, confirmButtonColor: '#1e293b' });
+                        });
+                }
+            });
+        }
+
+        // Fungsi Baru: Hapus Semua Data
+        function hapusSemuaData() {
+            if (firebaseCustomersCache.length === 0) {
+                Swal.fire({ icon: 'info', title: 'Kosong', text: 'Tidak ada data untuk dihapus.', confirmButtonColor: '#1e293b' });
+                return;
+            }
+
+            Swal.fire({
+                title: 'BAHAYA: Hapus SEMUA Data?',
+                html: "Tindakan ini <b>TIDAK BISA DIBATALKAN</b>.<br>Seluruh riwayat pelanggan akan lenyap dari database.",
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fa-solid fa-dumpster-fire"></i> HANGUSKAN SEMUA!',
+                cancelButtonText: 'Batal Aman'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Verifikasi Lapis Kedua agar tidak kepencet
+                    Swal.fire({
+                        title: 'Ketik "HAPUS" untuk konfirmasi',
+                        input: 'text',
+                        inputAttributes: { autocapitalize: 'off' },
+                        showCancelButton: true,
+                        confirmButtonText: 'Konfirmasi',
+                        showLoaderOnConfirm: true,
+                        confirmButtonColor: '#ef4444',
+                        preConfirm: (text) => {
+                            if (text !== 'HAPUS' && text !== 'hapus') { Swal.showValidationMessage('Teks tidak cocok. Dibatalkan.'); }
+                        },
+                        allowOutsideClick: () => !Swal.isLoading()
+                    }).then((finalResult) => {
+                        if (finalResult.isConfirmed) {
+                            showLoading();
+                            database.ref('customers').remove()
+                                .then(() => {
+                                    hideLoading();
+                                    Swal.fire({ icon: 'success', title: 'Bersih!', text: 'Database telah dikosongkan.', confirmButtonColor: '#1e293b' });
+                                })
+                                .catch(err => {
+                                    hideLoading();
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: err.message, confirmButtonColor: '#1e293b' });
+                                });
+                        }
+                    });
+                }
+            });
+        }
+
+        const modal = document.getElementById('waModal');
+        const modalContent = document.getElementById('modalContent');
+        
+        function openModal(id) {
+            const cust = firebaseCustomersCache.find(c => c.id === id);
+            
+            if(cust) {
+                document.getElementById('modalFoto').src = cust.foto;
+                document.getElementById('modalNama').innerText = cust.nama;
+                document.getElementById('modalLayanan').innerText = "Pelanggan " + cust.layanan;
+                document.getElementById('modalNoHP').innerText = cust.nohp;
+                
+                const waLink = `https://wa.me/${formatWA(cust.nohp)}`;
+                document.getElementById('modalBtnWA').href = waLink;
+
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modalContent.classList.remove('scale-95');
+                }, 10);
+            }
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) { closeModal(); }
+        });
+    </script>
+</body>
+</html>
