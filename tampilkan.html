@@ -16,7 +16,6 @@
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- Header -->
     <header class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <h1 class="text-xl font-bold">
@@ -29,7 +28,6 @@
     </header>
 
     <main class="container mx-auto px-4 py-6 max-w-7xl flex-grow">
-        <!-- Info & Pencarian -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-5">
             <div class="flex items-center gap-2">
                 <h2 class="text-xl font-bold">Semua Data</h2>
@@ -43,10 +41,8 @@
             </div>
         </div>
 
-        <!-- Kontainer Data -->
         <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-        <!-- Tombol Tampilkan Lebih Banyak -->
         <div id="loadMoreContainer" class="mt-6 text-center hidden">
             <button onclick="loadMore()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full transition shadow-sm">
                 <i class="fa-solid fa-chevron-down mr-2"></i>Tampilkan Lebih Banyak
@@ -54,7 +50,6 @@
         </div>
     </main>
 
-    <!-- Modal Detail -->
     <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" id="modalContent">
             <div class="relative">
@@ -84,12 +79,10 @@
         let dataCustomer = [];
         let itemsToShow = 6;
 
-        // Ambil data yang disimpan oleh halaman index.html
         function ambilDataDariPenyimpanan() {
             const dataTersimpan = localStorage.getItem("dataCustomer");
             if (dataTersimpan) {
                 dataCustomer = JSON.parse(dataTersimpan);
-                // Urutkan dari yang terbaru di atas
                 dataCustomer.sort((a, b) => b.id - a.id);
             } else {
                 dataCustomer = [];
@@ -97,7 +90,6 @@
             loadData("");
         }
 
-        // Format nomor WhatsApp
         function formatWA(nohp) {
             if(!nohp) return "";
             let num = nohp.replace(/\D/g, '');
@@ -106,7 +98,6 @@
             return num;
         }
 
-        // Tampilkan data ke layar
         function loadData(search = "") {
             const container = document.getElementById('dataContainer');
             const totalInfo = document.getElementById('totalData');
@@ -183,13 +174,9 @@
             document.getElementById('detailModal').classList.add('hidden');
         }
 
-        // Jalankan saat halaman dibuka
         ambilDataDariPenyimpanan();
-
-        // Cek otomatis jika ada perubahan data dari halaman lain
         window.addEventListener('storage', ambilDataDariPenyimpanan);
 
-        // Fitur pencarian
         document.getElementById('searchInput').addEventListener('input', e => {
             clearTimeout(window.cariTunggu);
             window.cariTunggu = setTimeout(() => loadData(e.target.value), 300);
