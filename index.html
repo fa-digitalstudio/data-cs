@@ -444,7 +444,7 @@
             }
         });
 
-        // ✅ FUNGSI LOKASI DIPERBAIKI: LEBIH AKURAT, CEPAT & TETAP SESUAI
+        // ✅ FUNGSI LOKASI DIPERBAIKI: TANPA TULISAN KOORDINAT & AKURASI
         function getLocation() {
             showLoading();
             const lokasiInput = document.getElementById('lokasi');
@@ -496,9 +496,10 @@
                                     ].filter(Boolean);
                                     if (bagian.length > 0) alamat = bagian.join(", ");
                                 }
-                                lokasiInput.value = `Koordinat: ${posisiTerbaik.lat}, ${posisiTerbaik.lon}\nAkurasi ±${posisiTerbaik.akurasi} meter\n${alamat}`;
+                                // ✅ TAMPILAN SESUAI PERMINTAAN: TANPA KATA KOORDINAT & AKURASI
+                                lokasiInput.value = `${posisiTerbaik.lat}, ${posisiTerbaik.lon}\n${alamat}`;
                             } catch (err) {
-                                lokasiInput.value = `Koordinat: ${posisiTerbaik.lat}, ${posisiTerbaik.lon}\nAkurasi ±${posisiTerbaik.akurasi} meter\nGagal memuat alamat lengkap`;
+                                lokasiInput.value = `${posisiTerbaik.lat}, ${posisiTerbaik.lon}\nGagal memuat alamat lengkap`;
                             }
                             hideLoading();
                             Swal.fire({ 
