@@ -16,8 +16,15 @@
         .card-hover { transition: transform 0.2s ease-in-out; }
         .card-hover:hover { transform: translateY(-3px); }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .animate-spin { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        /* ✅ Animasi loading ojol */
+        .animate-ojol {
+            animation: jalan 2s linear infinite;
+        }
+        @keyframes jalan {
+            0% { transform: translateX(-20px); }
+            50% { transform: translateX(20px); }
+            100% { transform: translateX(-20px); }
+        }
         /* Efek blur nomor HP */
         .blur-text {
             filter: blur(5px);
@@ -77,17 +84,17 @@
             </div>
         </div>
 
-        <!-- ✅ Tulisan Berjalan Keren di bawah kolom pencarian -->
+        <!-- ✅ Tulisan Berjalan -->
         <div class="marquee-container">
             <div class="marquee-text">
                 Selamat datang! Halaman ini hanya untuk melihat data ( LOKASI ) saja - Untuk fitur WhatsApp tidak dapat diakses untuk menjaga keamanan data pelanggan. Terima kasih🙏
             </div>
         </div>
 
-        <!-- Indikator Loading -->
-        <div id="loadingIndicator" class="hidden flex items-center justify-center gap-2 text-sm text-gray-500 my-3">
-            <div class="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-            <span>Memuat data...</span>
+        <!-- ✅ Loading Animasi Ojol Antar Makanan -->
+        <div id="loadingIndicator" class="hidden flex flex-col items-center justify-center gap-2 text-sm text-gray-600 my-4">
+            <div class="animate-ojol text-4xl">🛵🍱</div>
+            <span>Sedang mengambil data...</span>
         </div>
 
         <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
