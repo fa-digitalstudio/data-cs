@@ -5,134 +5,201 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lihat Data Customer</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        brand: { grab: '#00B14F', gojek: '#00AA13', maxim: '#FEBE00' }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        .card-hover { transition: transform 0.2s ease-in-out; }
-        .card-hover:hover { transform: translateY(-3px); }
+        body { background-color: #f8fafc; }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
         /* Animasi loading ojol */
-        .animate-ojol {
-            animation: jalan 2s linear infinite;
-        }
+        .animate-ojol { animation: jalan 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes jalan {
-            0% { transform: translateX(-20px); }
-            50% { transform: translateX(20px); }
-            100% { transform: translateX(-20px); }
+            0% { transform: translateX(-15px) rotate(-5deg); }
+            50% { transform: translateX(15px) rotate(5deg); }
+            100% { transform: translateX(-15px) rotate(-5deg); }
         }
-        /* Efek blur nomor HP */
-        .blur-text {
-            filter: blur(5px);
-            user-select: none;
-        }
-        /* Agar klik luar modal bisa menutup */
-        #detailModal {
-            cursor: pointer;
-        }
-        #modalContent {
-            cursor: default;
-        }
-        /* CSS untuk tulisan berjalan */
+        
+        .blur-text { filter: blur(5px); user-select: none; transition: filter 0.3s; }
+        #detailModal { cursor: pointer; }
+        #modalContent { cursor: default; }
+
+        /* Ticker Keren */
         .marquee-container {
             overflow: hidden;
             white-space: nowrap;
-            background: linear-gradient(90deg, #1e293b, #334155);
+            background: linear-gradient(135deg, #059669, #0d9488);
             color: white;
-            padding: 8px 0;
-            border-radius: 8px;
-            margin: 8px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            border-radius: 12px;
+            margin: 16px 0 24px 0;
+            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.2);
+            position: relative;
         }
+        .marquee-container::before, .marquee-container::after {
+            content: ''; position: absolute; top: 0; bottom: 0; width: 40px; z-index: 10;
+        }
+        .marquee-container::before { left: 0; background: linear-gradient(to right, #059669, transparent); border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+        .marquee-container::after { right: 0; background: linear-gradient(to left, #0d9488, transparent); border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
         .marquee-text {
             display: inline-block;
             padding-left: 100%;
             animation: marquee 25s linear infinite;
-            font-weight: 500;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
         @keyframes marquee {
             0% { transform: translateX(0); }
             100% { transform: translateX(-100%); }
         }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+<body class="text-slate-800 font-sans min-h-screen flex flex-col relative overflow-x-hidden">
 
-    <header class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-center items-center">
-            <h1 class="text-xl font-bold">
-                <i class="fa-solid fa-address-book mr-2"></i>Daftar Customer
+    <div class="absolute top-0 inset-x-0 h-[400px] bg-gradient-to-b from-teal-50/80 to-transparent -z-10"></div>
+
+    <header class="bg-white/80 backdrop-blur-md text-slate-800 shadow-sm border-b border-slate-200 sticky top-0 z-50 transition-all">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center max-w-7xl">
+            <h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2 text-slate-800">
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white w-9 h-9 flex items-center justify-center rounded-xl shadow-md">
+                    <i class="fa-solid fa-address-book"></i>
+                </div>
+                Data Customer
             </h1>
+            <div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shadow-inner overflow-hidden">
+                <i class="fa-solid fa-user-shield text-slate-400"></i>
+            </div>
         </div>
     </header>
 
     <main class="container mx-auto px-4 py-6 max-w-7xl flex-grow">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-5">
-            <div class="flex items-center gap-2 flex-wrap">
-                <h2 class="text-xl font-bold">Semua Data</h2>
-                <span id="totalData" class="bg-slate-800 text-white px-3 py-1 rounded-full text-sm font-bold">0 Data</span>
-                <button onclick="loginWithEmail()" class="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 px-3 py-1 rounded-lg text-sm font-medium transition flex items-center gap-1.5 shadow-sm active:scale-95" title="Muat ulang data dari Firebase">
-                    <i class="fa-solid fa-rotate"></i> Muat Ulang
+        
+        <div class="marquee-container">
+            <div class="marquee-text flex items-center gap-2">
+                <i class="fa-solid fa-bullhorn text-yellow-300 mr-1"></i> Selamat datang! Halaman ini hanya untuk melihat data ( LOKASI ) Sory yeee hanya Farid Ganteng yang bisa akses nomor handphone costumer ^_^
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex items-center gap-3 flex-wrap w-full md:w-auto">
+                <h2 class="text-lg font-bold text-slate-800 border-r-2 border-slate-100 pr-3">Semua Data</h2>
+                <span id="totalData" class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg text-sm font-bold shadow-sm">0 Data</span>
+                <button onclick="loginWithEmail()" class="ml-auto md:ml-0 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 px-4 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 shadow-sm hover:shadow active:scale-95 group" title="Muat ulang data dari Firebase">
+                    <i class="fa-solid fa-rotate group-hover:rotate-180 transition-transform duration-500 text-emerald-500"></i> Muat Ulang
                 </button>
             </div>
-            <div class="relative w-full md:w-64">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                    <i class="fa-solid fa-search text-gray-400"></i>
+            
+            <div class="relative w-full md:w-80">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-4">
+                    <i class="fa-solid fa-search text-slate-400"></i>
                 </span>
-                <input type="text" id="searchInput" class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Cari nama/lokasi...">
+                <input type="text" id="searchInput" class="w-full bg-slate-50 border-none rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all shadow-inner text-sm font-medium placeholder-slate-400" placeholder="Cari nama atau lokasi...">
             </div>
         </div>
 
-        <div class="marquee-container">
-            <div class="marquee-text">
-                Selamat datang! Halaman ini hanya untuk melihat data ( LOKASI ) Sory yeee hanya Farid Ganteng yang bisa akses nomor handphone costumer ^_^    </div>
+        <div id="loadingIndicator" class="hidden flex flex-col items-center justify-center gap-3 my-12">
+            <div class="bg-white px-8 py-4 rounded-2xl shadow-md border border-emerald-100 flex items-center gap-4">
+                <div class="animate-ojol text-3xl">🛵</div>
+                <span class="font-bold text-emerald-600 animate-pulse tracking-wide">Mengambil Data...</span>
+            </div>
         </div>
 
-        <div id="loadingIndicator" class="hidden flex flex-col items-center justify-center gap-2 text-sm text-gray-600 my-4">
-            <div class="animate-ojol text-4xl">🛵🍱</div>
-            <span>Sedang mengambil data...</span>
-        </div>
+        <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
-        <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-
-        <div id="loadMoreContainer" class="mt-6 text-center hidden">
-            <button onclick="loadMore()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full transition shadow-sm">
-                <i class="fa-solid fa-chevron-down mr-2"></i>Tampilkan Lebih Banyak
+        <div id="loadMoreContainer" class="mt-10 text-center hidden mb-6">
+            <button onclick="loadMore()" class="bg-white hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 text-slate-600 border border-slate-200 font-bold py-2.5 px-8 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95 group">
+                Tampilkan Lebih Banyak <i class="fa-solid fa-chevron-down ml-2 group-hover:translate-y-1 transition-transform"></i>
             </button>
         </div>
     </main>
 
-    <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4" onclick="closeModal()">
-        <div id="modalContent" class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 opacity-100 transition-opacity" onclick="closeModal()">
+        <div id="modalContent" class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform scale-100 transition-transform" onclick="event.stopPropagation()">
+            
             <div class="relative">
-                <img id="modalFoto" src="" class="w-full h-64 object-cover" alt="Foto">
-                <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/50 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
+                <img id="modalFoto" src="" class="w-full h-72 object-cover" alt="Foto">
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
+                
+                <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/30 hover:bg-red-500 backdrop-blur-md text-white rounded-full w-9 h-9 flex items-center justify-center transition-colors shadow-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                    <h3 id="modalNama" class="text-white text-xl font-bold"></h3>
-                    <p id="modalLayanan" class="text-gray-200 text-sm"></p>
+                
+                <div class="absolute bottom-0 left-0 right-0 p-6">
+                    <div class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-lg mb-2 border border-white/30">
+                        <p id="modalLayanan" class="text-white text-xs font-bold tracking-wider uppercase"></p>
+                    </div>
+                    <h3 id="modalNama" class="text-white text-2xl font-extrabold drop-shadow-md"></h3>
                 </div>
             </div>
-            <div class="p-5 space-y-3">
-                <p><i class="fa-solid fa-phone mr-2 text-gray-500"></i> <span id="modalNoHP" class="blur-text">**********</span></p>
-                <p><i class="fa-solid fa-map-marker-alt mr-2 text-gray-500"></i> <span id="modalLokasi">-</span></p>
-                <a id="modalMaps" href="#" target="_blank" class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-lg text-center transition">
-                    <i class="fa-solid fa-map-location-dot mr-2"></i> Buka di Google Maps
-                </a>
-                <button id="modalWA" type="button" class="w-full bg-gray-400 cursor-not-allowed text-white font-bold py-2.5 rounded-lg text-center transition" onclick="tampilkanPeringatan()">
-                    <i class="fa-brands fa-whatsapp mr-2"></i> Chat WhatsApp
-                </button>
+            
+            <div class="p-6 space-y-5 bg-slate-50">
+                <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Nomor Handphone</p>
+                        <p id="modalNoHP" class="blur-text text-slate-800 font-bold text-lg">**********</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-emerald-500 shrink-0 mt-1">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Alamat / Lokasi</p>
+                        <p id="modalLokasi" class="text-slate-700 text-sm font-medium leading-relaxed">-</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <a id="modalMaps" href="#" target="_blank" class="col-span-2 flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl text-center transition-all shadow-lg shadow-blue-500/30 active:scale-95">
+                        <i class="fa-solid fa-location-arrow"></i> Buka di Maps
+                    </a>
+                    <button id="modalWA" type="button" class="col-span-2 flex justify-center items-center gap-2 bg-slate-200 cursor-not-allowed text-slate-500 font-bold py-3.5 rounded-xl text-center transition-all" onclick="tampilkanPeringatan()">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Chat WhatsApp
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ✅ Konfigurasi Firebase
         const firebaseConfig = {
           apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
           authDomain: "datacsgm.firebaseapp.com",
@@ -147,7 +214,6 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // ✅ Data akun kamu
         const USER_UID = "8b0ExlzkhySZ36Pbg49rtmPyupl2";
         const USER_EMAIL = "faridaris25@gmail.com";
         const USER_PASSWORD = "admin123";
@@ -162,28 +228,24 @@
             document.getElementById('loadingIndicator').classList.add('hidden');
         }
 
-        // Popup peringatan akses
         function tampilkanPeringatan() {
             Swal.fire({
                 icon: 'warning',
-                title: '⚠️ Akses Ditolak',
-                text: 'Anda tidak punya akses untuk melihat nomor customer, hahahaha',
-                confirmButtonColor: '#1e293b',
-                confirmButtonText: 'Mengerti',
-                backdrop: `rgba(30, 41, 59, 0.7)`,
-                customClass: { popup: 'rounded-2xl', title: 'font-bold text-lg' }
+                title: 'Akses Ditolak!',
+                text: 'Hanya Mas Farid Ganteng yang punya akses untuk melihat nomor customer! Hahahaha',
+                confirmButtonColor: '#059669',
+                confirmButtonText: 'Ampun Bang',
+                backdrop: `rgba(15, 23, 42, 0.8)`,
+                customClass: { popup: 'rounded-3xl', title: 'font-extrabold text-xl' }
             });
         }
 
-        // ✅ Login otomatis agar izin akses aktif
         function loginWithEmail() {
             showLoading();
-            // Cek sesi yang sudah ada
             if (auth.currentUser && auth.currentUser.uid === USER_UID) {
                 ambilDataDariFirebase();
                 return;
             }
-            // Login ulang jika belum ada
             auth.signInWithEmailAndPassword(USER_EMAIL, USER_PASSWORD)
             .then(() => {
                 console.log("Login berhasil");
@@ -193,15 +255,16 @@
                 console.error("Gagal login:", error);
                 hideLoading();
                 document.getElementById('dataContainer').innerHTML = `
-                <div class="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm">
-                    <i class="fa-solid fa-triangle-exclamation text-5xl mb-3 text-amber-400"></i>
-                    <p>Gagal masuk</p>
-                    <p class="text-sm mt-1">Cek kembali email & sandi akun Firebase</p>
+                <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-500 bg-white rounded-3xl shadow-sm border border-slate-100">
+                    <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-triangle-exclamation text-4xl text-red-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-700">Gagal Masuk</h3>
+                    <p class="text-sm mt-2">Cek kembali email & sandi akun Firebase</p>
                 </div>`;
             });
         }
 
-        // ✅ Ambil data dari Firebase dengan perbaikan penanganan key
         function ambilDataDariFirebase() {
             database.ref('customers').once('value')
             .then(snapshot => {
@@ -209,11 +272,9 @@
                 if (snapshot.exists()) {
                     snapshot.forEach(child => {
                         const val = child.val();
-                        // Tambahkan id jika belum ada
                         if (!val.id) val.id = child.key;
                         dataCustomer.push(val);
                     });
-                    // Urutkan dari yang terbaru
                     dataCustomer.sort((a, b) => {
                         const idA = Number(a.id) || a.id;
                         const idB = Number(b.id) || b.id;
@@ -227,10 +288,12 @@
                 console.error("Kesalahan baca data:", error);
                 hideLoading();
                 document.getElementById('dataContainer').innerHTML = `
-                <div class="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm">
-                    <i class="fa-solid fa-triangle-exclamation text-5xl mb-3 text-amber-400"></i>
-                    <p>Gagal memuat data</p>
-                    <p class="text-sm mt-1">Pastikan rules Firebase mengizinkan akses baca</p>
+                <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-500 bg-white rounded-3xl shadow-sm border border-slate-100">
+                    <div class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-700">Gagal Memuat Data</h3>
+                    <p class="text-sm mt-2">Pastikan rules Firebase mengizinkan akses baca</p>
                 </div>`;
             });
         }
@@ -243,7 +306,6 @@
             return num;
         }
 
-        // ✅ Perbaikan fungsi pencarian
         function loadData(search = "") {
             const container = document.getElementById('dataContainer');
             const totalInfo = document.getElementById('totalData');
@@ -264,9 +326,13 @@
             totalInfo.innerText = `${dataTampil.length} Data`;
 
             if(dataTampil.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm">
-                    <i class="fa-solid fa-box-open text-5xl mb-3 text-gray-300"></i>
-                    <p>Belum ada data tersimpan / tidak ditemukan</p>
+                container.innerHTML = `
+                <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-500 bg-white/80 backdrop-blur rounded-3xl shadow-sm border border-slate-100">
+                    <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-5">
+                        <i class="fa-solid fa-box-open text-5xl text-slate-300"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-700">Tidak ada data</h3>
+                    <p class="text-sm mt-2 text-slate-400">Belum ada data tersimpan / tidak ditemukan</p>
                 </div>`;
                 loadMoreBtn.classList.add('hidden');
                 return;
@@ -276,21 +342,29 @@
             let html = "";
 
             tampil.forEach(cust => {
-                const warna = cust.layanan === 'Grab' ? 'bg-green-500' : 
-                              cust.layanan === 'Maxim' ? 'bg-yellow-400 text-slate-900' : 
-                              cust.layanan === 'Gojek' ? 'bg-green-600' :
-                              'bg-slate-600';
+                // Modifikasi warna disesuaikan dengan identitas brand aslinya agar lebih estetik
+                const warna = cust.layanan === 'Grab' ? 'bg-[#00B14F] text-white' : 
+                              cust.layanan === 'Maxim' ? 'bg-[#FEBE00] text-black' : 
+                              cust.layanan === 'Gojek' ? 'bg-[#00AA13] text-white' :
+                              'bg-slate-700 text-white';
 
                 html += `
-                <div class="bg-white rounded-xl shadow hover:shadow-md p-4 card-hover cursor-pointer" onclick="bukaDetail('${cust.id}')">
-                    <div class="flex items-center gap-3">
-                        <img src="${cust.foto || 'https://via.placeholder.com/150?text=Tanpa+Foto'}" alt="Foto" class="w-16 h-16 rounded-lg object-cover border">
-                        <div>
-                            <h3 class="font-bold text-lg">${cust.nama || '-'}</h3>
-                            <span class="${warna} text-xs font-semibold px-2 py-0.5 rounded">${cust.layanan || '-'}</span>
+                <div class="group bg-white rounded-2xl shadow-sm border border-slate-100 p-5 card-hover cursor-pointer relative overflow-hidden" onclick="bukaDetail('${cust.id}')">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-slate-50 to-transparent rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
+                    <div class="flex items-center gap-4">
+                        <div class="relative w-16 h-16 shrink-0">
+                            <img src="${cust.foto || 'https://via.placeholder.com/150?text=Tanpa+Foto'}" alt="Foto" class="w-full h-full rounded-2xl object-cover shadow-sm group-hover:shadow-md transition-all group-hover:scale-105 duration-300">
+                            <div class="absolute inset-0 rounded-2xl ring-1 ring-inset ring-black/5"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-extrabold text-slate-800 text-lg truncate group-hover:text-emerald-600 transition-colors">${cust.nama || '-'}</h3>
+                            <div class="mt-1 inline-block ${warna} text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm">${cust.layanan || '-'}</div>
                         </div>
                     </div>
-                    <p class="mt-3 text-sm text-gray-600 line-clamp-2">${cust.lokasi || '-'}</p>
+                    <div class="mt-4 pt-4 border-t border-slate-50 flex items-start gap-2.5">
+                        <i class="fa-solid fa-location-dot text-slate-300 mt-1 group-hover:text-emerald-500 transition-colors"></i>
+                        <p class="text-sm text-slate-500 line-clamp-2 leading-relaxed font-medium group-hover:text-slate-700 transition-colors">${cust.lokasi || '-'}</p>
+                    </div>
                 </div>`;
             });
 
@@ -303,14 +377,13 @@
             loadData(document.getElementById('searchInput').value);
         }
 
-        // ✅ HANYA format tautan Maps yang disesuaikan persis seperti gambar
         function bukaDetail(id) {
             const cust = dataCustomer.find(c => String(c.id) === String(id));
             if(!cust) return;
 
             document.getElementById('modalFoto').src = cust.foto || 'https://via.placeholder.com/400x400?text=Tanpa+Foto';
             document.getElementById('modalNama').innerText = cust.nama || '-';
-            document.getElementById('modalLayanan').innerText = `Layanan: ${cust.layanan || '-'}`;
+            document.getElementById('modalLayanan').innerText = `${cust.layanan || '-'}`;
             document.getElementById('modalNoHP').innerText = Math.floor(Math.random() * 10) === 5 ? (cust.nohp ? cust.nohp : 'Tidak ada nomor') : '**********';
             document.getElementById('modalLokasi').innerText = cust.lokasi || 'Tidak ada alamat';
 
@@ -320,7 +393,6 @@
             let tautanMaps;
             if (polaKoordinat.test(lokasiAsli.trim())) {
                 const koordinatBersih = lokasiAsli.trim().replace(/\s+/g, '');
-                // Format persis seperti di gambar: google.com/maps?q=-4.055040,121.590053%0A...
                 tautanMaps = `https://www.google.com/maps?q=${koordinatBersih}%0A${encodeURIComponent(lokasiAsli)}`;
             } else {
                 tautanMaps = `https://www.google.com/maps?q=${encodeURIComponent(lokasiAsli)}`;
@@ -334,12 +406,10 @@
             document.getElementById('detailModal').classList.add('hidden');
         }
 
-        // Jalankan login otomatis saat halaman dibuka
         window.addEventListener('load', () => {
             loginWithEmail();
         });
 
-        // Fitur pencarian
         document.getElementById('searchInput').addEventListener('input', e => {
             clearTimeout(window.cariTunggu);
             window.cariTunggu = setTimeout(() => loadData(e.target.value), 300);
