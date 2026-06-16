@@ -8,105 +8,171 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         .card-hover { transition: transform 0.2s ease-in-out; }
         .card-hover:hover { transform: translateY(-3px); }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color: #1e293b !important; border-radius: 0.75rem; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- Header Tanpa Tombol Kembali -->
-    <header class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-center items-center">
-            <h1 class="text-xl font-bold">
-                <i class="fa-solid fa-address-book mr-2"></i>Daftar Customer
-            </h1>
-        </div>
-    </header>
-
-    <main class="container mx-auto px-4 py-6 max-w-7xl flex-grow">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-5">
-            <div class="flex items-center gap-2">
-                <h2 class="text-xl font-bold">Semua Data</h2>
-                <span id="totalData" class="bg-slate-800 text-white px-3 py-1 rounded-full text-sm font-bold">0 Data</span>
+    <!-- Layar Login Sama Seperti di Index -->
+    <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border-t-4 border-slate-800">
+            <div class="text-center mb-6">
+                <div class="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-800 text-2xl shadow-inner">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800">Masuk</h3>
+                <p class="text-gray-500 text-sm mt-1">Masukkan akun yang sama</p>
             </div>
-            <div class="relative w-full md:w-64">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                    <i class="fa-solid fa-search text-gray-400"></i>
-                </span>
-                <input type="text" id="searchInput" class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Cari nama/lokasi...">
-            </div>
-        </div>
-
-        <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-
-        <div id="loadMoreContainer" class="mt-6 text-center hidden">
-            <button onclick="loadMore()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full transition shadow-sm">
-                <i class="fa-solid fa-chevron-down mr-2"></i>Tampilkan Lebih Banyak
-            </button>
-        </div>
-    </main>
-
-    <!-- Modal Detail -->
-    <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div class="relative">
-                <img id="modalFoto" src="" class="w-full h-64 object-cover" alt="Foto">
-                <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/50 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">Email</label>
+                    <input type="email" id="loginEmail" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="Email Anda">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">Password</label>
+                    <input type="password" id="loginPassword" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="Kata sandi">
+                </div>
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2 mt-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> Masuk
                 </button>
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                    <h3 id="modalNama" class="text-white text-xl font-bold"></h3>
-                    <p id="modalLayanan" class="text-gray-200 text-sm"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Konten Utama -->
+    <div id="appContent" class="hidden flex-col flex-grow">
+        <header class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-4 flex justify-center items-center">
+                <h1 class="text-xl font-bold">
+                    <i class="fa-solid fa-address-book mr-2"></i>Daftar Customer
+                </h1>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 py-6 max-w-7xl flex-grow">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-5">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-xl font-bold">Semua Data</h2>
+                    <span id="totalData" class="bg-slate-800 text-white px-3 py-1 rounded-full text-sm font-bold">0 Data</span>
+                </div>
+                <div class="relative w-full md:w-64">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i class="fa-solid fa-search text-gray-400"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Cari nama/lokasi...">
                 </div>
             </div>
-            <div class="p-5 space-y-3">
-                <p><i class="fa-solid fa-phone mr-2 text-gray-500"></i> <span id="modalNoHP">-</span></p>
-                <p><i class="fa-solid fa-map-marker-alt mr-2 text-gray-500"></i> <span id="modalLokasi">-</span></p>
-                <a id="modalMaps" href="#" target="_blank" class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-lg text-center transition">
-                    <i class="fa-solid fa-map-location-dot mr-2"></i> Buka di Google Maps
-                </a>
-                <a id="modalWA" href="#" target="_blank" class="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-lg text-center transition">
-                    <i class="fa-brands fa-whatsapp mr-2"></i> Chat WhatsApp
-                </a>
+
+            <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+            <div id="loadMoreContainer" class="mt-6 text-center hidden">
+                <button onclick="loadMore()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full transition shadow-sm">
+                    <i class="fa-solid fa-chevron-down mr-2"></i>Tampilkan Lebih Banyak
+                </button>
+            </div>
+        </main>
+
+        <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                <div class="relative">
+                    <img id="modalFoto" src="" class="w-full h-64 object-cover" alt="Foto">
+                    <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/50 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                        <h3 id="modalNama" class="text-white text-xl font-bold"></h3>
+                        <p id="modalLayanan" class="text-gray-200 text-sm"></p>
+                    </div>
+                </div>
+                <div class="p-5 space-y-3">
+                    <p><i class="fa-solid fa-phone mr-2 text-gray-500"></i> <span id="modalNoHP">-</span></p>
+                    <p><i class="fa-solid fa-map-marker-alt mr-2 text-gray-500"></i> <span id="modalLokasi">-</span></p>
+                    <a id="modalMaps" href="#" target="_blank" class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-lg text-center transition">
+                        <i class="fa-solid fa-map-location-dot mr-2"></i> Buka di Google Maps
+                    </a>
+                    <a id="modalWA" href="#" target="_blank" class="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-lg text-center transition">
+                        <i class="fa-brands fa-whatsapp mr-2"></i> Chat WhatsApp
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Konfigurasi Firebase SAMA PERSIS seperti index.html
+        // ✅ GANTI DENGAN KONFIGURASI PERSIS DARI index.html
         const firebaseConfig = {
-        const firebaseConfig = {
-  apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
-  authDomain: "datacsgm.firebaseapp.com",
-  databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "datacsgm",
-  storageBucket: "datacsgm.firebasestorage.app",
-  messagingSenderId: "370220756586",
-  appId: "1:370220756586:web:f1188256adb659aaee2413"
-};
+          apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
+          authDomain: "datacsgm.firebaseapp.com",
+          projectId: "datacsgm",
+          databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app", 
+          storageBucket: "datacsgm.firebasestorage.app",
+          messagingSenderId: "370220756586",
+          appId: "1:370220756586:web:f1188256adb659aaee2413"
+        };
 
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const database = firebase.database();
 
         let dataCustomer = [];
         let itemsToShow = 6;
 
-        // Ambil data langsung dari Firebase
-        database.ref('customers').on('value', (snapshot) => {
-            dataCustomer = [];
-            snapshot.forEach(child => {
-                dataCustomer.push(child.val());
-            });
-            // Urutkan dari yang terbaru ke atas
-            dataCustomer.sort((a, b) => b.id - a.id);
-            loadData("");
+        // Cek status login otomatis
+        auth.onAuthStateChanged(user => {
+            const loginScreen = document.getElementById('loginScreen');
+            const appContent = document.getElementById('appContent');
+            
+            if (user) {
+                loginScreen.classList.add('hidden');
+                appContent.classList.remove('hidden');
+                appContent.classList.add('flex');
+                ambilDataDariFirebase();
+            } else {
+                loginScreen.classList.remove('hidden');
+                appContent.classList.add('hidden');
+                appContent.classList.remove('flex');
+            }
         });
 
-        // Format nomor WA
+        // Proses login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPassword').value;
+
+            auth.signInWithEmailAndPassword(email, pass)
+                .catch(error => {
+                    Swal.fire({ 
+                        icon: 'error', 
+                        title: 'Gagal Masuk', 
+                        text: 'Email atau kata sandi salah: ' + error.message, 
+                        confirmButtonColor: '#1e293b' 
+                    });
+                });
+        });
+
+        // Ambil data setelah login berhasil
+        function ambilDataDariFirebase() {
+            database.ref('customers').on('value', (snapshot) => {
+                dataCustomer = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        dataCustomer.push(child.val());
+                    });
+                    dataCustomer.sort((a, b) => b.id - a.id);
+                }
+                loadData("");
+            });
+        }
+
         function formatWA(nohp) {
             if(!nohp) return "";
             let num = nohp.replace(/\D/g, '');
@@ -115,7 +181,6 @@
             return num;
         }
 
-        // Tampilkan data
         function loadData(search = "") {
             const container = document.getElementById('dataContainer');
             const totalInfo = document.getElementById('totalData');
@@ -126,8 +191,8 @@
             if(search.trim()) {
                 const q = search.toLowerCase();
                 dataTampil = dataTampil.filter(cust => 
-                    cust.nama?.toLowerCase().includes(q) ||
-                    cust.lokasi?.toLowerCase().includes(q) ||
+                    (cust.nama && cust.nama.toLowerCase().includes(q)) ||
+                    (cust.lokasi && cust.lokasi.toLowerCase().includes(q)) ||
                     (cust.nohp && cust.nohp.includes(q))
                 );
             }
@@ -192,7 +257,6 @@
             document.getElementById('detailModal').classList.add('hidden');
         }
 
-        // Fitur pencarian
         document.getElementById('searchInput').addEventListener('input', e => {
             clearTimeout(window.cariTunggu);
             window.cariTunggu = setTimeout(() => loadData(e.target.value), 300);
