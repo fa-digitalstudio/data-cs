@@ -5,7 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Data Customer Driver</title>
 
-    <!-- ✅ BAGIAN BARU: Dukungan PWA -->
+    <script>
+        function blokirKomputer() {
+            // Cek apakah sistem operasi adalah mobile
+            const isMobileAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            // Cek apakah layar mendukung fitur sentuh
+            const isTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            // Cek lebar layar (mencegah komputer yang layarnya besar)
+            const isDesktopWidth = window.innerWidth > 1024;
+            
+            // Jika BUKAN mobile, ATAU diubah ke mode desktop, ATAU layarnya besar seperti PC:
+            if (!isMobileAgent || !isTouchScreen || isDesktopWidth) {
+                // Alihkan ke link lain (Silakan ubah link di bawah ini)
+                window.location.replace("https://link-pengalihan-anda.com"); 
+            }
+        }
+        
+        // Jalankan proteksi sesaat sebelum halaman dimuat
+        blokirKomputer();
+        // Tetap awasi jika layar komputer diubah-ubah ukurannya
+        window.addEventListener('resize', blokirKomputer);
+    </script>
     <meta name="description" content="Aplikasi pengelola data pelanggan untuk driver">
     <meta name="theme-color" content="#1e293b">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,8 +35,6 @@
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512x512.png">
-    <!-- ✅ AKHIR BAGIAN PWA -->
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
