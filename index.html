@@ -455,7 +455,7 @@
             }
         });
 
-        // ✅ FUNGSI LOKASI DIPERBAIKI AGAR LEBIH AKURAT, BAGIAN LAIN TETAP SAMA
+        // ✅ FUNGSI LOKASI DIPERBAIKI AGAR LEBIH AKURAT
         function getLocation() {
             showLoading();
             const lokasiInput = document.getElementById('lokasi');
@@ -463,9 +463,9 @@
             
             if (navigator.geolocation) {
                 const geoOptions = {
-                    enableHighAccuracy: true, // Paksa gunakan mode akurasi tinggi
-                    maximumAge: 0, // Jangan pakai data lokasi lama
-                    timeout: 45000 // Tunggu sampai 45 detik untuk menangkap sinyal GPS
+                    enableHighAccuracy: true, // Paksa mode akurasi tertinggi
+                    maximumAge: 0, // Jangan gunakan lokasi lama
+                    timeout: 60000 // Perpanjang waktu tunggu sampai 60 detik
                 };
 
                 navigator.geolocation.getCurrentPosition(
@@ -478,7 +478,7 @@
                             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&accept-language=id&extratags=1&namedetails=1`, {
                                 headers: {
                                     'Accept': 'application/json',
-                                    'User-Agent': 'SistemDataCustomer/1.0'
+                                    'User-Agent': 'SistemDataCustomerDriver/2.0'
                                 }
                             });
                             
@@ -490,9 +490,9 @@
                             if (data.address) {
                                 const a = data.address;
                                 const bagianAlamat = [
-                                    a.road || a.street || "",
-                                    a.suburb || a.district || "",
-                                    a.city || a.town || a.village || "",
+                                    a.road || a.street || a.path || "",
+                                    a.suburb || a.district || a.neighbourhood || "",
+                                    a.city || a.town || a.village || a.municipality || "",
                                     a.state || a.province || "",
                                     a.postcode || ""
                                 ].filter(Boolean);
@@ -502,27 +502,27 @@
                                 }
                             }
 
-                            lokasiInput.value = `${lat}, ${lon} (Akurasi ±${akurasi} meter)\n${alamat}`;
+                            lokasiInput.value = `Koordinat: ${lat}, ${lon}\nAkurasi ±${akurasi} meter\n${alamat}`;
                         } catch (err) {
-                            lokasiInput.value = `${lat}, ${lon}\nGagal memuat alamat lengkap, koordinat tetap tersimpan`;
+                            lokasiInput.value = `Koordinat: ${lat}, ${lon}\nAkurasi ±${akurasi} meter\nGagal memuat alamat lengkap`;
                         }
                         
                         hideLoading();
                         Swal.fire({ 
-                            icon: akurasi <= 100 ? 'success' : 'info', 
-                            title: akurasi <= 100 ? 'Lokasi Akurat' : 'Lokasi Ditemukan', 
+                            icon: akurasi <= 50 ? 'success' : akurasi <= 100 ? 'info' : 'warning', 
+                            title: akurasi <= 50 ? 'Lokasi Sangat Akurat' : akurasi <= 100 ? 'Lokasi Akurat' : 'Lokasi Cukup Akurat', 
                             text: `Akurasi ±${akurasi} meter`, 
                             toast: true, 
                             position: 'top-end', 
                             showConfirmButton: false, 
-                            timer: 3000 
+                            timer: 3500 
                         });
                     },
                     function(error) {
-                        let pesan = "Pastikan GPS aktif dan izin lokasi diberikan.";
-                        if (error.code === 1) pesan = "Izin akses lokasi ditolak oleh pengguna.";
-                        if (error.code === 2) pesan = "Sinyal lokasi tidak tersedia atau lemah. Coba di tempat terbuka.";
-                        if (error.code === 3) pesan = "Waktu pencarian lokasi habis, coba lagi atau pindah ke tempat terbuka.";
+                        let pesan = "Pastikan GPS aktif, izin lokasi diberikan, dan berada di tempat terbuka.";
+                        if (error.code === 1) pesan = "Izin akses lokasi ditolak. Aktifkan izin lokasi di pengaturan browser.";
+                        if (error.code === 2) pesan = "Sinyal GPS lemah/tidak tersedia. Pindah ke tempat terbuka.";
+                        if (error.code === 3) pesan = "Waktu pencarian habis. Coba lagi atau pindah posisi.";
                         
                         lokasiInput.value = "";
                         hideLoading();
