@@ -7,6 +7,8 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         .card-hover { transition: transform 0.2s ease-in-out; }
@@ -16,14 +18,12 @@
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
+    <!-- Header Tanpa Tombol Kembali -->
     <header class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="container mx-auto px-4 py-4 flex justify-center items-center">
             <h1 class="text-xl font-bold">
                 <i class="fa-solid fa-address-book mr-2"></i>Daftar Customer
             </h1>
-            <a href="index.html" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md text-sm font-semibold transition">
-                <i class="fa-solid fa-arrow-left mr-1"></i> Kembali
-            </a>
         </div>
     </header>
 
@@ -50,8 +50,9 @@
         </div>
     </main>
 
+    <!-- Modal Detail -->
     <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" id="modalContent">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="relative">
                 <img id="modalFoto" src="" class="w-full h-64 object-cover" alt="Foto">
                 <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/50 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
@@ -76,20 +77,35 @@
     </div>
 
     <script>
+        // Konfigurasi Firebase SAMA PERSIS seperti index.html
+        const firebaseConfig = {
+          apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
+          authDomain: "datacsgm.firebaseapp.com",
+          projectId: "datacsgm",
+          databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app", 
+          storageBucket: "datacsgm.firebasestorage.app",
+          messagingSenderId: "370220756586",
+          appId: "1:370220756586:web:f1188256adb659aaee2413"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         let dataCustomer = [];
         let itemsToShow = 6;
 
-        function ambilDataDariPenyimpanan() {
-            const dataTersimpan = localStorage.getItem("dataCustomer");
-            if (dataTersimpan) {
-                dataCustomer = JSON.parse(dataTersimpan);
-                dataCustomer.sort((a, b) => b.id - a.id);
-            } else {
-                dataCustomer = [];
-            }
+        // Ambil data langsung dari Firebase
+        database.ref('customers').on('value', (snapshot) => {
+            dataCustomer = [];
+            snapshot.forEach(child => {
+                dataCustomer.push(child.val());
+            });
+            // Urutkan dari yang terbaru ke atas
+            dataCustomer.sort((a, b) => b.id - a.id);
             loadData("");
-        }
+        });
 
+        // Format nomor WA
         function formatWA(nohp) {
             if(!nohp) return "";
             let num = nohp.replace(/\D/g, '');
@@ -98,6 +114,7 @@
             return num;
         }
 
+        // Tampilkan data
         function loadData(search = "") {
             const container = document.getElementById('dataContainer');
             const totalInfo = document.getElementById('totalData');
@@ -108,8 +125,8 @@
             if(search.trim()) {
                 const q = search.toLowerCase();
                 dataTampil = dataTampil.filter(cust => 
-                    cust.nama.toLowerCase().includes(q) ||
-                    cust.lokasi.toLowerCase().includes(q) ||
+                    cust.nama?.toLowerCase().includes(q) ||
+                    cust.lokasi?.toLowerCase().includes(q) ||
                     (cust.nohp && cust.nohp.includes(q))
                 );
             }
@@ -138,11 +155,11 @@
                     <div class="flex items-center gap-3">
                         <img src="${cust.foto || 'https://via.placeholder.com/150?text=Tanpa+Foto'}" alt="Foto" class="w-16 h-16 rounded-lg object-cover border">
                         <div>
-                            <h3 class="font-bold text-lg">${cust.nama}</h3>
-                            <span class="${warna} text-xs font-semibold px-2 py-0.5 rounded">${cust.layanan}</span>
+                            <h3 class="font-bold text-lg">${cust.nama || '-'}</h3>
+                            <span class="${warna} text-xs font-semibold px-2 py-0.5 rounded">${cust.layanan || '-'}</span>
                         </div>
                     </div>
-                    <p class="mt-3 text-sm text-gray-600 line-clamp-2">${cust.lokasi}</p>
+                    <p class="mt-3 text-sm text-gray-600 line-clamp-2">${cust.lokasi || '-'}</p>
                 </div>`;
             });
 
@@ -160,11 +177,11 @@
             if(!cust) return;
 
             document.getElementById('modalFoto').src = cust.foto || 'https://via.placeholder.com/400x400?text=Tanpa+Foto';
-            document.getElementById('modalNama').innerText = cust.nama;
-            document.getElementById('modalLayanan').innerText = `Layanan: ${cust.layanan}`;
-            document.getElementById('modalNoHP').innerText = cust.nohp || "Tidak ada nomor";
-            document.getElementById('modalLokasi').innerText = cust.lokasi;
-            document.getElementById('modalMaps').href = `https://www.google.com/maps?q=${encodeURIComponent(cust.lokasi)}`;
+            document.getElementById('modalNama').innerText = cust.nama || '-';
+            document.getElementById('modalLayanan').innerText = `Layanan: ${cust.layanan || '-'}`;
+            document.getElementById('modalNoHP').innerText = cust.nohp || 'Tidak ada nomor';
+            document.getElementById('modalLokasi').innerText = cust.lokasi || 'Tidak ada alamat';
+            document.getElementById('modalMaps').href = `https://www.google.com/maps?q=${encodeURIComponent(cust.lokasi || '')}`;
             document.getElementById('modalWA').href = `https://wa.me/${formatWA(cust.nohp)}`;
 
             document.getElementById('detailModal').classList.remove('hidden');
@@ -174,9 +191,7 @@
             document.getElementById('detailModal').classList.add('hidden');
         }
 
-        ambilDataDariPenyimpanan();
-        window.addEventListener('storage', ambilDataDariPenyimpanan);
-
+        // Fitur pencarian
         document.getElementById('searchInput').addEventListener('input', e => {
             clearTimeout(window.cariTunggu);
             window.cariTunggu = setTimeout(() => loadData(e.target.value), 300);
