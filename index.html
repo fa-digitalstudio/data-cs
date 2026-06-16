@@ -303,7 +303,6 @@
         let firebaseCustomersCache = [];
         let isFirstLoad = true;
 
-        // ✅ BAGIAN BARU: Registrasi Service Worker untuk PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js')
@@ -311,11 +310,7 @@
                     .catch(err => console.log('Gagal daftar Service Worker:', err));
             });
         }
-        // ✅ AKHIR BAGIAN PWA
 
-        // ============================================================
-        // ✅ FUNGSI KOMPRES GAMBAR OTOMATIS
-        // ============================================================
         async function kompresGambar(file, kualitas = 0.2, lebarMaks = 900){
             return new Promise((resolve) => {
                 const canvas = document.createElement('canvas');
@@ -418,10 +413,11 @@
 
         function startRealtimeListener() {
             database.ref('customers').on('value', (snapshot) => {
-                firebaseCustomersCache = [];
+                let tempArray = [];
                 snapshot.forEach((childSnapshot) => {
-                    firebaseCustomersCache.push(childSnapshot.val());
+                    tempArray.push(childSnapshot.val());
                 });
+                firebaseCustomersCache = tempArray;
                 
                 const currentSearch = document.getElementById('searchInput').value;
                 loadData(currentSearch, false);
@@ -541,8 +537,13 @@
                 });
         });
 
+        // OPTIMASI: Tambah Debounce agar pencarian lebih cepat & tidak macet
+        let searchTimeout;
         document.getElementById('searchInput').addEventListener('input', function(e) {
-            loadData(e.target.value, true);
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                loadData(e.target.value, true);
+            }, 300);
         });
 
         function loadData(searchQuery = "", resetPagination = false) {
@@ -565,8 +566,7 @@
                 );
             }
 
-            totalDataInfo.innerText = `${customers.length} Data Terditeksi`;
-            container.innerHTML = "";
+            totalDataInfo.innerText = `${customers.length} Data Terdeteksi`;
 
             if(customers.length === 0) {
                 loadMoreBtn.classList.add('hidden');
@@ -575,6 +575,9 @@
             }
 
             const paginatedData = customers.slice(0, itemsToShow);
+
+            // OPTIMASI: Render HTML sekaligus pakai string (jauh lebih ringan dari innerHTML += )
+            let cardsHtml = "";
 
             paginatedData.forEach(cust => {
                 const isGrab = cust.layanan === 'Grab';
@@ -587,7 +590,7 @@
                 const hasNohp = cust.nohp && cust.nohp.trim() !== "";
                 const displayNohp = hasNohp ? cust.nohp : "Tidak ada nomor";
                 
-                const mapsLink = `https://maps.google.com/?q=${encodeURIComponent(cust.lokasi)}`;
+                const mapsLink = `http://googleusercontent.com/maps.google.com/?q=${encodeURIComponent(cust.lokasi)}`;
 
                 const phoneHtml = hasNohp 
                     ? `<button onclick="openModal(${cust.id})" class="text-blue-600 font-semibold hover:text-blue-800 transition flex items-center bg-blue-50 px-2 py-1 rounded-md text-sm"><i class="fa-solid fa-phone mr-2"></i> ${displayNohp} <i class="fa-solid fa-arrow-up-right-from-square ml-2 text-xs"></i></button>`
@@ -623,8 +626,10 @@
                         </button>
                     </div>
                 `;
-                container.innerHTML += card;
+                cardsHtml += card;
             });
+
+            container.innerHTML = cardsHtml;
 
             if (itemsToShow < customers.length) {
                 loadMoreBtn.classList.remove('hidden');
