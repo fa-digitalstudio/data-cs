@@ -148,10 +148,10 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // ✅ Data akun kamu (isi dengan email & sandi asli Firebase kamu)
+        // ✅ Data akun kamu
         const USER_UID = "8b0ExlzkhySZ36Pbg49rtmPyupl2";
-        const USER_EMAIL = "faridaris25@gmail.com";     // GANTI dengan email akun Firebase kamu
-        const USER_PASSWORD = "admin123";       // GANTI dengan sandi akun Firebase kamu
+        const USER_EMAIL = "faridaris25@gmail.com";
+        const USER_PASSWORD = "admin123";
 
         let dataCustomer = [];
         let itemsToShow = 6;
@@ -293,6 +293,7 @@
             loadData(document.getElementById('searchInput').value);
         }
 
+        // ✅ Fungsi bukaDetail yang sudah diperbaiki koordinatnya
         function bukaDetail(id) {
             const cust = dataCustomer.find(c => c.id === id);
             if(!cust) return;
@@ -300,9 +301,23 @@
             document.getElementById('modalFoto').src = cust.foto || 'https://via.placeholder.com/400x400?text=Tanpa+Foto';
             document.getElementById('modalNama').innerText = cust.nama || '-';
             document.getElementById('modalLayanan').innerText = `Layanan: ${cust.layanan || '-'}`;
-            document.getElementById('modalNoHP').innerText = Math.floor(Math.random() * 10) === 5 ? (cust.nohp ? cust.nohp : 'Tidak ada nomor') : '**********'; // Tetap mengikuti batasan UI Anda sebelumnya
+            document.getElementById('modalNoHP').innerText = Math.floor(Math.random() * 10) === 5 ? (cust.nohp ? cust.nohp : 'Tidak ada nomor') : '**********';
             document.getElementById('modalLokasi').innerText = cust.lokasi || 'Tidak ada alamat';
-            document.getElementById('modalMaps').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cust.lokasi || '')}`;
+
+            // Cek apakah lokasi berformat koordinat
+            const lokasi = cust.lokasi || '';
+            const polaKoordinat = /^-?\d+\.\d+,\s*-?\d+\.\d+$/;
+
+            let tautanMaps;
+            if (polaKoordinat.test(lokasi.trim())) {
+                // Jika koordinat, gunakan format langsung
+                tautanMaps = `https://www.google.com/maps?q=${encodeURIComponent(lokasi.trim())}`;
+            } else {
+                // Jika alamat biasa, tetap gunakan pencarian
+                tautanMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lokasi)}`;
+            }
+
+            document.getElementById('modalMaps').href = tautanMaps;
 
             document.getElementById('detailModal').classList.remove('hidden');
         }
