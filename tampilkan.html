@@ -79,14 +79,15 @@
     <script>
         // Konfigurasi Firebase SAMA PERSIS seperti index.html
         const firebaseConfig = {
-          apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
-          authDomain: "datacsgm.firebaseapp.com",
-          projectId: "datacsgm",
-          databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app", 
-          storageBucket: "datacsgm.firebasestorage.app",
-          messagingSenderId: "370220756586",
-          appId: "1:370220756586:web:f1188256adb659aaee2413"
-        };
+        const firebaseConfig = {
+  apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
+  authDomain: "datacsgm.firebaseapp.com",
+  databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "datacsgm",
+  storageBucket: "datacsgm.firebasestorage.app",
+  messagingSenderId: "370220756586",
+  appId: "1:370220756586:web:f1188256adb659aaee2413"
+};
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
