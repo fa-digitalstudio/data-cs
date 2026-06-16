@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/810.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -304,7 +304,7 @@
             loadData(document.getElementById('searchInput').value);
         }
 
-        // ✅ Perbaikan buka detail dan tautan Google Maps
+        // ✅ Format tautan disesuaikan persis seperti contoh gambar
         function bukaDetail(id) {
             const cust = dataCustomer.find(c => String(c.id) === String(id));
             if(!cust) return;
@@ -316,16 +316,15 @@
             document.getElementById('modalLokasi').innerText = cust.lokasi || 'Tidak ada alamat';
 
             const lokasiAsli = cust.lokasi || '';
-            // ✅ Pola koordinat lebih fleksibel
             const polaKoordinat = /^-?\d{1,3}\.\d+[,\s]+-?\d{1,3}\.\d+$/;
 
             let tautanMaps;
             if (polaKoordinat.test(lokasiAsli.trim())) {
                 const koordinatBersih = lokasiAsli.trim().replace(/\s+/g, '');
-                // Format sesuai contoh: -4.055040,121.590053
-                tautanMaps = `https://www.google.com/maps/place/${koordinatBersih}/@${koordinatBersih},17z`;
+                // Format sama persis seperti pada gambar: google.com/maps?q=-4.055040,121.590053%0A...
+                tautanMaps = `https://www.google.com/maps?q=${koordinatBersih}%0A${encodeURIComponent(lokasiAsli)}`;
             } else {
-                tautanMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lokasiAsli)}`;
+                tautanMaps = `https://www.google.com/maps?q=${encodeURIComponent(lokasiAsli)}`;
             }
 
             document.getElementById('modalMaps').href = tautanMaps;
