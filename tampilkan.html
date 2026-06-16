@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lihat Data Customer</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        .card-hover { transition: transform 0.2s ease-in-out; }
+        .card-hover:hover { transform: translateY(-3px); }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold">
+                <i class="fa-solid fa-address-book mr-2"></i>Daftar Customer
+            </h1>
+            <a href="index.html" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md text-sm font-semibold transition">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Kembali
+            </a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6 max-w-7xl flex-grow">
+        <!-- Info & Pencarian -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-5">
+            <div class="flex items-center gap-2">
+                <h2 class="text-xl font-bold">Semua Data</h2>
+                <span id="totalData" class="bg-slate-800 text-white px-3 py-1 rounded-full text-sm font-bold">0 Data</span>
+            </div>
+            <div class="relative w-full md:w-64">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <i class="fa-solid fa-search text-gray-400"></i>
+                </span>
+                <input type="text" id="searchInput" class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Cari nama/lokasi...">
+            </div>
+        </div>
+
+        <!-- Kontainer Data -->
+        <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+        <!-- Tombol Tampilkan Lebih Banyak -->
+        <div id="loadMoreContainer" class="mt-6 text-center hidden">
+            <button onclick="loadMore()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full transition shadow-sm">
+                <i class="fa-solid fa-chevron-down mr-2"></i>Tampilkan Lebih Banyak
+            </button>
+        </div>
+    </main>
+
+    <!-- Modal Detail -->
+    <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" id="modalContent">
+            <div class="relative">
+                <img id="modalFoto" src="" class="w-full h-64 object-cover" alt="Foto">
+                <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/50 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                    <h3 id="modalNama" class="text-white text-xl font-bold"></h3>
+                    <p id="modalLayanan" class="text-gray-200 text-sm"></p>
+                </div>
+            </div>
+            <div class="p-5 space-y-3">
+                <p><i class="fa-solid fa-phone mr-2 text-gray-500"></i> <span id="modalNoHP">-</span></p>
+                <p><i class="fa-solid fa-map-marker-alt mr-2 text-gray-500"></i> <span id="modalLokasi">-</span></p>
+                <a id="modalMaps" href="#" target="_blank" class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-lg text-center transition">
+                    <i class="fa-solid fa-map-location-dot mr-2"></i> Buka di Google Maps
+                </a>
+                <a id="modalWA" href="#" target="_blank" class="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-lg text-center transition">
+                    <i class="fa-brands fa-whatsapp mr-2"></i> Chat WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dataCustomer = [];
+        let itemsToShow = 6;
+
+        // Ambil data yang disimpan oleh halaman index.html
+        function ambilDataDariPenyimpanan() {
+            const dataTersimpan = localStorage.getItem("dataCustomer");
+            if (dataTersimpan) {
+                dataCustomer = JSON.parse(dataTersimpan);
+                // Urutkan dari yang terbaru di atas
+                dataCustomer.sort((a, b) => b.id - a.id);
+            } else {
+                dataCustomer = [];
+            }
+            loadData("");
+        }
+
+        // Format nomor WhatsApp
+        function formatWA(nohp) {
+            if(!nohp) return "";
+            let num = nohp.replace(/\D/g, '');
+            if(num.startsWith('0')) num = '62' + num.slice(1);
+            else if(num.startsWith('8')) num = '62' + num;
+            return num;
+        }
+
+        // Tampilkan data ke layar
+        function loadData(search = "") {
+            const container = document.getElementById('dataContainer');
+            const totalInfo = document.getElementById('totalData');
+            const loadMoreBtn = document.getElementById('loadMoreContainer');
+
+            let dataTampil = [...dataCustomer];
+
+            if(search.trim()) {
+                const q = search.toLowerCase();
+                dataTampil = dataTampil.filter(cust => 
+                    cust.nama.toLowerCase().includes(q) ||
+                    cust.lokasi.toLowerCase().includes(q) ||
+                    (cust.nohp && cust.nohp.includes(q))
+                );
+            }
+
+            totalInfo.innerText = `${dataTampil.length} Data`;
+
+            if(dataTampil.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm">
+                    <i class="fa-solid fa-box-open text-5xl mb-3 text-gray-300"></i>
+                    <p>Belum ada data tersimpan</p>
+                </div>`;
+                loadMoreBtn.classList.add('hidden');
+                return;
+            }
+
+            const tampil = dataTampil.slice(0, itemsToShow);
+            let html = "";
+
+            tampil.forEach(cust => {
+                const warna = cust.layanan === 'Grab' ? 'bg-green-500' : 
+                              cust.layanan === 'Maxim' ? 'bg-yellow-400 text-slate-900' : 
+                              'bg-slate-600';
+
+                html += `
+                <div class="bg-white rounded-xl shadow hover:shadow-md p-4 card-hover cursor-pointer" onclick="bukaDetail(${cust.id})">
+                    <div class="flex items-center gap-3">
+                        <img src="${cust.foto || 'https://via.placeholder.com/150?text=Tanpa+Foto'}" alt="Foto" class="w-16 h-16 rounded-lg object-cover border">
+                        <div>
+                            <h3 class="font-bold text-lg">${cust.nama}</h3>
+                            <span class="${warna} text-xs font-semibold px-2 py-0.5 rounded">${cust.layanan}</span>
+                        </div>
+                    </div>
+                    <p class="mt-3 text-sm text-gray-600 line-clamp-2">${cust.lokasi}</p>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+            loadMoreBtn.classList.toggle('hidden', itemsToShow >= dataTampil.length);
+        }
+
+        function loadMore() {
+            itemsToShow += 6;
+            loadData(document.getElementById('searchInput').value);
+        }
+
+        function bukaDetail(id) {
+            const cust = dataCustomer.find(c => c.id === id);
+            if(!cust) return;
+
+            document.getElementById('modalFoto').src = cust.foto || 'https://via.placeholder.com/400x400?text=Tanpa+Foto';
+            document.getElementById('modalNama').innerText = cust.nama;
+            document.getElementById('modalLayanan').innerText = `Layanan: ${cust.layanan}`;
+            document.getElementById('modalNoHP').innerText = cust.nohp || "Tidak ada nomor";
+            document.getElementById('modalLokasi').innerText = cust.lokasi;
+            document.getElementById('modalMaps').href = `https://www.google.com/maps?q=${encodeURIComponent(cust.lokasi)}`;
+            document.getElementById('modalWA').href = `https://wa.me/${formatWA(cust.nohp)}`;
+
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        }
+
+        // Jalankan saat halaman dibuka
+        ambilDataDariPenyimpanan();
+
+        // Cek otomatis jika ada perubahan data dari halaman lain
+        window.addEventListener('storage', ambilDataDariPenyimpanan);
+
+        // Fitur pencarian
+        document.getElementById('searchInput').addEventListener('input', e => {
+            clearTimeout(window.cariTunggu);
+            window.cariTunggu = setTimeout(() => loadData(e.target.value), 300);
+        });
+    </script>
+</body>
+</html>
