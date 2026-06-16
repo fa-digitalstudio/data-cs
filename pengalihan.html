@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKSES DIBLOKIR :: SISTEM TERBATAS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000;
+            color: #00ff41;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Kanvas animasi hujan karakter gaya Matrix */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.35;
+        }
+
+        /* Lapisan gelap di atas kanvas agar teks terbaca jelas */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.72);
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .glow {
+            text-shadow: 
+                0 0 5px #00ff41,
+                0 0 10px #00ff41,
+                0 0 20px #00ff41,
+                0 0 40px #009e2a;
+        }
+
+        .blink {
+            animation: blink 0.9s steps(2) infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .typing {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 3px solid #00ff41;
+            width: 0;
+            animation: typing 3.5s steps(40, end) forwards, blink 0.8s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 255, 65, 0.6);
+            z-index: 3;
+            animation: scan 4s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0%   { top: 0; opacity: 1; }
+            100% { top: 100vh; opacity: 0; }
+        }
+
+        .box-border {
+            border: 1px solid #00ff41;
+            box-shadow: 
+                0 0 8px #00ff41,
+                inset 0 0 12px rgba(0, 255, 65, 0.15);
+            background: rgba(0, 20, 0, 0.55);
+        }
+
+        .btn-hack {
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            background: transparent;
+            padding: 10px 24px;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-hack:hover {
+            background: #00ff41;
+            color: #000;
+            box-shadow: 0 0 18px #00ff41;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Kanvas efek matriks -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- Garis pemindai -->
+    <div class="scanline"></div>
+
+    <!-- Lapisan gelap -->
+    <div class="overlay"></div>
+
+    <!-- Isi halaman -->
+    <div class="content">
+        <div class="box-border p-8 md:p-12 max-w-2xl w-full">
+            <p class="text-sm md:text-base mb-3 tracking-widest">[ SISTEM KEAMANAN :: AKTIF ]</p>
+            
+            <h1 class="glow text-3xl md:text-5xl font-bold mb-6">
+                ⚠ AKSES DITOLAK
+            </h1>
+
+            <div class="mb-6 inline-block">
+                <p class="typing text-base md:text-lg glow">
+                    MAAF, HALAMAN TIDAK BISA DIAKSES
+                </p>
+            </div>
+
+            <div class="text-left text-sm md:text-base leading-relaxed mb-8 space-y-2 opacity-90">
+                <p>> STATUS: <span class="text-red-400">BLOKIR SISTEM</span></p>
+                <p>> KODE: <span class="text-yellow-300">ERR_403_ACCESS_FORBIDDEN</span></p>
+                <p>> ALASAN: Izin akses tidak terdaftar / terdeteksi aktivitas mencurigakan</p>
+                <p>> SARAN: Periksa koneksi, izin pengguna, atau hubungi administrator</p>
+                <p>> WAKTU: <span id="waktu-sistem"></span></p>
+                <p class="blink">> _menunggu perintah selanjutnya...</p>
+            </div>
+
+            
+            </a>
+        </div>
+
+        <p class="mt-6 text-xs opacity-60 tracking-widest">
+            ROOT@SYS-SECURE ~ SEMUA HAK DILINDUNGI
+        </p>
+    </div>
+
+    <script>
+        // === ANIMASI MATRIX ===
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const ukuranFont = 16;
+        const kolom = Math.floor(canvas.width / ukuranFont);
+        const karakter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+-=[]{}|;':\",./<>?アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
+        const arrKarakter = karakter.split("");
+
+        const posisiY = [];
+        for (let x = 0; x < kolom; x++) {
+            posisiY[x] = Math.random() * canvas.height / ukuranFont;
+        }
+
+        function gambarMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#00ff41";
+            ctx.font = ukuranFont + "px 'Share Tech Mono'";
+
+            for (let i = 0; i < posisiY.length; i++) {
+                const teks = arrKarakter[Math.floor(Math.random() * arrKarakter.length)];
+                ctx.fillText(teks, i * ukuranFont, posisiY[i] * ukuranFont);
+
+                if (posisiY[i] * ukuranFont > canvas.height && Math.random() > 0.975) {
+                    posisiY[i] = 0;
+                }
+                posisiY[i]++;
+            }
+        }
+        setInterval(gambarMatrix, 45);
+
+        // Sesuaikan ukuran kanvas saat layar berubah
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // === TAMPILKAN WAKTU SISTEM ===
+        function perbaruiWaktu() {
+            const sekarang = new Date();
+            const format = sekarang.toLocaleString('id-ID', {
+                hour12: false
+            });
+            document.getElementById('waktu-sistem').textContent = format;
+        }
+        perbaruiWaktu();
+        setInterval(perbaruiWaktu, 1000);
+    </script>
+
+</body>
+</html>
