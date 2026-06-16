@@ -152,10 +152,30 @@
         </div>
     </main>
 
-    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 opacity-100 transition-opacity" onclick="closeModal()">
+    <!-- Footer Baru nan Keren -->
+    <footer class="mt-auto relative bg-white border-t border-slate-100 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)] pb-4 pt-6">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>
+        <div class="container mx-auto px-4 relative z-10 flex flex-col items-center justify-center">
+            <div class="flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-code text-slate-300 text-xs"></i>
+                <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest">Designed & Developed With</p>
+                <i class="fa-solid fa-heart text-red-500 text-xs animate-pulse"></i>
+            </div>
+            <p class="text-slate-700 font-bold text-sm sm:text-base flex items-center gap-1.5 flex-wrap justify-center">
+                Copyright &copy; 2026 
+                <span class="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-transparent bg-clip-text font-extrabold text-lg ml-1 drop-shadow-sm tracking-wide">
+                    Farid Ganteng
+                </span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Modal Gambar Diperkecil (h-44) -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 opacity-100 transition-opacity" onclick="closeModal()">
         <div id="modalContent" class="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-[24rem] overflow-hidden transform scale-100 transition-transform" onclick="event.stopPropagation()">
             
-            <div class="relative h-56"> 
+            <!-- Mengubah tinggi gambar popup dari h-56 menjadi h-44 -->
+            <div class="relative h-44"> 
                 <img id="modalFoto" src="" class="w-full h-full object-cover" alt="Foto">
                 
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent"></div>
@@ -206,6 +226,7 @@
         </div>
     </div>
 
+    <!-- SCRIPT FIREBASE TETAP UTUH & TIDAK DIUBAH -->
     <script>
         const firebaseConfig = {
           apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
@@ -349,7 +370,6 @@
             let html = "";
 
             tampil.forEach(cust => {
-                // Modifikasi warna disesuaikan dengan identitas brand aslinya agar lebih estetik
                 const warna = cust.layanan === 'Grab' ? 'bg-[#00B14F] text-white' : 
                               cust.layanan === 'Maxim' ? 'bg-[#FEBE00] text-black' : 
                               cust.layanan === 'Gojek' ? 'bg-[#00AA13] text-white' :
