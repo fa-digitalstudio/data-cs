@@ -455,47 +455,94 @@
             }
         });
 
+        // ✅ FUNGSI LOKASI DIPERBAIKI AGAR LEBIH AKURAT, BAGIAN LAIN TETAP SAMA
         function getLocation() {
             showLoading();
             const lokasiInput = document.getElementById('lokasi');
-            lokasiInput.value = "Mencari titik koordinat...";
+            lokasiInput.value = "Mencari titik GPS paling akurat...";
             
             if (navigator.geolocation) {
                 const geoOptions = {
-                    enableHighAccuracy: true,
-                    maximumAge: 0,
-                    timeout: 15000
+                    enableHighAccuracy: true, // Paksa gunakan mode akurasi tinggi
+                    maximumAge: 0, // Jangan pakai data lokasi lama
+                    timeout: 45000 // Tunggu sampai 45 detik untuk menangkap sinyal GPS
                 };
 
                 navigator.geolocation.getCurrentPosition(
                     async function(position) {
                         const lat = position.coords.latitude.toFixed(6);
                         const lon = position.coords.longitude.toFixed(6);
+                        const akurasi = Math.round(position.coords.accuracy);
+
                         try {
-                            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+                            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&accept-language=id&extratags=1&namedetails=1`, {
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'User-Agent': 'SistemDataCustomer/1.0'
+                                }
+                            });
+                            
+                            if (!res.ok) throw new Error('Gagal terhubung ke layanan alamat');
+                            
                             const data = await res.json();
-                            const alamat = data.display_name || "Alamat tidak ditemukan";
-                            lokasiInput.value = `${lat}, ${lon}\n${alamat}`;
-                        } catch {
-                            lokasiInput.value = `${lat}, ${lon}\nGagal memuat alamat lengkap`;
+                            let alamat = data.display_name || "Alamat tidak ditemukan";
+                            
+                            if (data.address) {
+                                const a = data.address;
+                                const bagianAlamat = [
+                                    a.road || a.street || "",
+                                    a.suburb || a.district || "",
+                                    a.city || a.town || a.village || "",
+                                    a.state || a.province || "",
+                                    a.postcode || ""
+                                ].filter(Boolean);
+                                
+                                if (bagianAlamat.length > 0) {
+                                    alamat = bagianAlamat.join(", ");
+                                }
+                            }
+
+                            lokasiInput.value = `${lat}, ${lon} (Akurasi ±${akurasi} meter)\n${alamat}`;
+                        } catch (err) {
+                            lokasiInput.value = `${lat}, ${lon}\nGagal memuat alamat lengkap, koordinat tetap tersimpan`;
                         }
+                        
                         hideLoading();
-                        Swal.fire({ icon: 'success', title: 'Lokasi Ditemukan', text: 'Akurasi lokasi ditingkatkan.', toast: true, position: 'top-end', showConfirmButton: false, timer: 2500 });
+                        Swal.fire({ 
+                            icon: akurasi <= 100 ? 'success' : 'info', 
+                            title: akurasi <= 100 ? 'Lokasi Akurat' : 'Lokasi Ditemukan', 
+                            text: `Akurasi ±${akurasi} meter`, 
+                            toast: true, 
+                            position: 'top-end', 
+                            showConfirmButton: false, 
+                            timer: 3000 
+                        });
                     },
                     function(error) {
                         let pesan = "Pastikan GPS aktif dan izin lokasi diberikan.";
-                        if (error.code === 1) pesan = "Izin akses lokasi ditolak.";
-                        if (error.code === 2) pesan = "Sinyal lokasi tidak tersedia.";
-                        if (error.code === 3) pesan = "Waktu pencarian lokasi habis.";
+                        if (error.code === 1) pesan = "Izin akses lokasi ditolak oleh pengguna.";
+                        if (error.code === 2) pesan = "Sinyal lokasi tidak tersedia atau lemah. Coba di tempat terbuka.";
+                        if (error.code === 3) pesan = "Waktu pencarian lokasi habis, coba lagi atau pindah ke tempat terbuka.";
+                        
                         lokasiInput.value = "";
                         hideLoading();
-                        Swal.fire({ icon: 'error', title: 'Gagal Mendapatkan Lokasi', text: pesan, confirmButtonColor: '#1e293b' });
+                        Swal.fire({ 
+                            icon: 'error', 
+                            title: 'Gagal Mendapatkan Lokasi', 
+                            text: pesan, 
+                            confirmButtonColor: '#1e293b' 
+                        });
                     },
                     geoOptions
                 );
             } else { 
                 hideLoading();
-                Swal.fire({ icon: 'info', title: 'Tidak Didukung', text: 'Browser Anda tidak mendukung fitur lokasi.', confirmButtonColor: '#1e293b' });
+                Swal.fire({ 
+                    icon: 'info', 
+                    title: 'Tidak Didukung', 
+                    text: 'Browser Anda tidak mendukung fitur lokasi.', 
+                    confirmButtonColor: '#1e293b' 
+                });
             }
         }
 
@@ -590,7 +637,7 @@
                 const hasNohp = cust.nohp && cust.nohp.trim() !== "";
                 const displayNohp = hasNohp ? cust.nohp : "Tidak ada nomor";
                 
-                const mapsLink = `http://googleusercontent.com/maps.google.com/?q=${encodeURIComponent(cust.lokasi)}`;
+                const mapsLink = `https://www.google.com/maps?q=${encodeURIComponent(cust.lokasi)}`;
 
                 const phoneHtml = hasNohp 
                     ? `<button onclick="openModal(${cust.id})" class="text-blue-600 font-semibold hover:text-blue-800 transition flex items-center bg-blue-50 px-2 py-1 rounded-md text-sm"><i class="fa-solid fa-phone mr-2"></i> ${displayNohp} <i class="fa-solid fa-arrow-up-right-from-square ml-2 text-xs"></i></button>`
