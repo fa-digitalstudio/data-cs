@@ -16,7 +16,7 @@
         .card-hover { transition: transform 0.2s ease-in-out; }
         .card-hover:hover { transform: translateY(-3px); }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        /* ✅ Animasi loading ojol */
+        /* Animasi loading ojol */
         .animate-ojol {
             animation: jalan 2s linear infinite;
         }
@@ -37,7 +37,7 @@
         #modalContent {
             cursor: default;
         }
-        /* ✅ CSS untuk tulisan berjalan */
+        /* CSS untuk tulisan berjalan */
         .marquee-container {
             overflow: hidden;
             white-space: nowrap;
@@ -84,17 +84,17 @@
             </div>
         </div>
 
-        <!-- ✅ Tulisan Berjalan -->
+        <!-- Tulisan Berjalan -->
         <div class="marquee-container">
             <div class="marquee-text">
                 Selamat datang! Halaman ini hanya untuk melihat data ( LOKASI ) saja - Untuk fitur WhatsApp tidak dapat diakses untuk menjaga keamanan data pelanggan. Terima kasih🙏
             </div>
         </div>
 
-        <!-- ✅ Loading Animasi Ojol Antar Makanan -->
+        <!-- Loading Animasi Ojol Antar Makanan -->
         <div id="loadingIndicator" class="hidden flex flex-col items-center justify-center gap-2 text-sm text-gray-600 my-4">
-            <div class="animate-ojol text-4xl">🏍</div>
-            <span>Sedang mengambil data, Sabar Yaa!</span>
+            <div class="animate-ojol text-4xl">🛵🍱</div>
+            <span>Sedang mengambil data...</span>
         </div>
 
         <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -106,7 +106,7 @@
         </div>
     </main>
 
-    <!-- ✅ Modal: bisa ditutup klik di luar area -->
+    <!-- Modal: bisa ditutup klik di luar area -->
     <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4" onclick="closeModal()">
         <div id="modalContent" class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
             <div class="relative">
@@ -120,13 +120,13 @@
                 </div>
             </div>
             <div class="p-5 space-y-3">
-                <!-- ✅ No HP dipindah di atas lokasi + diberi efek blur -->
+                <!-- No HP dipindah di atas lokasi + diberi efek blur -->
                 <p><i class="fa-solid fa-phone mr-2 text-gray-500"></i> <span id="modalNoHP" class="blur-text">**********</span></p>
                 <p><i class="fa-solid fa-map-marker-alt mr-2 text-gray-500"></i> <span id="modalLokasi">-</span></p>
                 <a id="modalMaps" href="#" target="_blank" class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-lg text-center transition">
                     <i class="fa-solid fa-map-location-dot mr-2"></i> Buka di Google Maps
                 </a>
-                <!-- ✅ Tombol WA dinonaktifkan, saat diklik muncul notifikasi -->
+                <!-- Tombol WA dinonaktifkan, saat diklik muncul notifikasi -->
                 <button id="modalWA" type="button" class="w-full bg-gray-400 cursor-not-allowed text-white font-bold py-2.5 rounded-lg text-center transition" onclick="tampilkanPeringatan()">
                     <i class="fa-brands fa-whatsapp mr-2"></i> Chat WhatsApp
                 </button>
@@ -135,7 +135,7 @@
     </div>
 
     <script>
-        // ✅ GANTI konfigurasi ini dengan yang ada di index.html kamu
+        // ✅ Konfigurasi Firebase
         const firebaseConfig = {
           apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
           authDomain: "datacsgm.firebaseapp.com",
@@ -150,8 +150,10 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // ✅ UID kamu sudah dimasukkan di sini
-        const USER_UID = "8b0ExlzkhySZ36Pbg49rtmPyupl2";
+        // ✅ Data akun kamu (isi dengan email & sandi asli Firebase kamu)
+        const USER_UID = "VyIJne93gMcu43saa6BnP6NKgbo1";
+        const USER_EMAIL = "kdmf@gmail.com";     // GANTI dengan email akun Firebase kamu
+        const USER_PASSWORD = "admin1234";       // GANTI dengan sandi akun Firebase kamu
 
         let dataCustomer = [];
         let itemsToShow = 6;
@@ -163,7 +165,7 @@
             document.getElementById('loadingIndicator').classList.add('hidden');
         }
 
-        // ✅ Popup keren untuk peringatan akses
+        // Popup peringatan akses
         function tampilkanPeringatan() {
             Swal.fire({
                 icon: 'warning',
@@ -172,36 +174,37 @@
                 confirmButtonColor: '#1e293b',
                 confirmButtonText: 'Mengerti',
                 backdrop: `rgba(30, 41, 59, 0.7)`,
-                customClass: {
-                    popup: 'rounded-2xl',
-                    title: 'font-bold text-lg'
-                }
+                customClass: { popup: 'rounded-2xl', title: 'font-bold text-lg' }
             });
         }
 
-        // Login otomatis pakai UID untuk dapat izin akses sesuai rules
-        function loginWithUID() {
+        // ✅ Login otomatis agar izin akses aktif
+        function loginWithEmail() {
             showLoading();
-            // Cek apakah sudah ada sesi login
+            // Cek sesi yang sudah ada
             if (auth.currentUser && auth.currentUser.uid === USER_UID) {
                 ambilDataDariFirebase();
                 return;
             }
-
-            // Jika belum login, gunakan akses otomatis untuk UID ini
-            auth.onAuthStateChanged(user => {
-                if (user && user.uid === USER_UID) {
-                    ambilDataDariFirebase();
-                } else {
-                    // Jika perlu, kamu bisa masukkan email & sandi kamu di sini, contoh:
-                    // auth.signInWithEmailAndPassword("kdmf@gmail.com", "admin1234")
-                    // Atau jika rules sudah mengizinkan UID ini, data akan terbaca
-                    ambilDataDariFirebase();
-                }
+            // Login ulang jika belum ada
+            auth.signInWithEmailAndPassword(USER_EMAIL, USER_PASSWORD)
+            .then(() => {
+                console.log("Login berhasil");
+                ambilDataDariFirebase();
+            })
+            .catch(error => {
+                console.error("Gagal login:", error);
+                hideLoading();
+                document.getElementById('dataContainer').innerHTML = `
+                <div class="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-5xl mb-3 text-amber-400"></i>
+                    <p>Gagal masuk</p>
+                    <p class="text-sm mt-1">Cek kembali email & sandi akun Firebase</p>
+                </div>`;
             });
         }
 
-        // Ambil data hanya untuk dibaca saja
+        // Ambil data hanya baca saja
         function ambilDataDariFirebase() {
             database.ref('customers').once('value')
             .then(snapshot => {
@@ -216,13 +219,13 @@
                 loadData("");
             })
             .catch(error => {
-                console.error("Kesalahan:", error);
+                console.error("Kesalahan baca data:", error);
                 hideLoading();
                 document.getElementById('dataContainer').innerHTML = `
                 <div class="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm">
                     <i class="fa-solid fa-triangle-exclamation text-5xl mb-3 text-amber-400"></i>
                     <p>Gagal memuat data</p>
-                    <p class="text-sm mt-1">Pastikan UID sudah sesuai dan rules mengizinkan akses</p>
+                    <p class="text-sm mt-1">Pastikan rules Firebase mengizinkan akses baca</p>
                 </div>`;
             });
         }
@@ -299,7 +302,6 @@
             document.getElementById('modalFoto').src = cust.foto || 'https://via.placeholder.com/400x400?text=Tanpa+Foto';
             document.getElementById('modalNama').innerText = cust.nama || '-';
             document.getElementById('modalLayanan').innerText = `Layanan: ${cust.layanan || '-'}`;
-            // ✅ Tetap blur, tidak menampilkan nomor asli
             document.getElementById('modalNoHP').innerText = cust.nohp ? cust.nohp : 'Tidak ada nomor';
             document.getElementById('modalLokasi').innerText = cust.lokasi || 'Tidak ada alamat';
             document.getElementById('modalMaps').href = `https://www.google.com/maps?q=${encodeURIComponent(cust.lokasi || '')}`;
@@ -311,8 +313,8 @@
             document.getElementById('detailModal').classList.add('hidden');
         }
 
-        // Jalankan saat halaman dibuka
-        loginWithUID();
+        // Jalankan login otomatis saat halaman dibuka
+        loginWithEmail();
 
         // Fitur pencarian
         document.getElementById('searchInput').addEventListener('input', e => {
