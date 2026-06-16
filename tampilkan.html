@@ -293,7 +293,7 @@
             loadData(document.getElementById('searchInput').value);
         }
 
-        // ✅ Fungsi bukaDetail yang sudah diperbaiki koordinatnya
+        // ✅ Perbaikan tepat untuk koordinat
         function bukaDetail(id) {
             const cust = dataCustomer.find(c => c.id === id);
             if(!cust) return;
@@ -304,17 +304,16 @@
             document.getElementById('modalNoHP').innerText = Math.floor(Math.random() * 10) === 5 ? (cust.nohp ? cust.nohp : 'Tidak ada nomor') : '**********';
             document.getElementById('modalLokasi').innerText = cust.lokasi || 'Tidak ada alamat';
 
-            // Cek apakah lokasi berformat koordinat
-            const lokasi = cust.lokasi || '';
-            const polaKoordinat = /^-?\d+\.\d+,\s*-?\d+\.\d+$/;
+            const lokasiAsli = cust.lokasi || '';
+            const polaKoordinat = /^-?\d+\.\d+[,\s]+-?\d+\.\d+$/;
 
             let tautanMaps;
-            if (polaKoordinat.test(lokasi.trim())) {
-                // Jika koordinat, gunakan format langsung
-                tautanMaps = `https://www.google.com/maps?q=${encodeURIComponent(lokasi.trim())}`;
+            if (polaKoordinat.test(lokasiAsli.trim())) {
+                // Format khusus untuk titik tepat di Google Maps
+                const koordinatBersih = lokasiAsli.trim().replace(/\s+/g, '');
+                tautanMaps = `https://www.google.com/maps/place/${koordinatBersih}/@${koordinatBersih},17z`;
             } else {
-                // Jika alamat biasa, tetap gunakan pencarian
-                tautanMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lokasi)}`;
+                tautanMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lokasiAsli)}`;
             }
 
             document.getElementById('modalMaps').href = tautanMaps;
