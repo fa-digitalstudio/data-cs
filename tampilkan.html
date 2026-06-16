@@ -6,14 +6,17 @@
     <title>Lihat Data Customer</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         .card-hover { transition: transform 0.2s ease-in-out; }
         .card-hover:hover { transform: translateY(-3px); }
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
@@ -40,8 +43,8 @@
             </div>
         </div>
 
-        <!-- ✅ Indikator Loading di bawah kolom pencarian -->
-        <div id="loadingIndicator" class="hidden flex items-center justify-center gap-2 text-sm text-gray-500 my-2">
+        <!-- Indikator Loading -->
+        <div id="loadingIndicator" class="hidden flex items-center justify-center gap-2 text-sm text-gray-500 my-3">
             <div class="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
             <span>Memuat data...</span>
         </div>
@@ -81,24 +84,27 @@
     </div>
 
     <script>
-        // ✅ Konfigurasi Firebase sama persis dari index.html
+        // ✅ GANTI konfigurasi ini dengan yang ada di index.html kamu
         const firebaseConfig = {
           apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
           authDomain: "datacsgm.firebaseapp.com",
           projectId: "datacsgm",
-          databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app", 
+          databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app",
           storageBucket: "datacsgm.firebasestorage.app",
           messagingSenderId: "370220756586",
           appId: "1:370220756586:web:f1188256adb659aaee2413"
         };
 
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const database = firebase.database();
+
+        // ✅ UID kamu sudah dimasukkan di sini
+        const USER_UID = "VyIJne93gMcu43saa6BnP6NKgbo1";
 
         let dataCustomer = [];
         let itemsToShow = 6;
 
-        // Fungsi tampil/sembunyi loading
         function showLoading() {
             document.getElementById('loadingIndicator').classList.remove('hidden');
         }
@@ -106,10 +112,32 @@
             document.getElementById('loadingIndicator').classList.add('hidden');
         }
 
-        // Ambil data langsung dari Firebase
-        function ambilDataDariFirebase() {
+        // Login otomatis pakai UID untuk dapat izin akses sesuai rules
+        function loginWithUID() {
             showLoading();
-            database.ref('customers').on('value', (snapshot) => {
+            // Cek apakah sudah ada sesi login
+            if (auth.currentUser && auth.currentUser.uid === USER_UID) {
+                ambilDataDariFirebase();
+                return;
+            }
+
+            // Jika belum login, gunakan akses otomatis untuk UID ini
+            auth.onAuthStateChanged(user => {
+                if (user && user.uid === USER_UID) {
+                    ambilDataDariFirebase();
+                } else {
+                    // Jika perlu, kamu bisa masukkan email & sandi kamu di sini, contoh:
+                    // auth.signInWithEmailAndPassword("kdmf@gmail.com", "admin1234")
+                    // Atau jika rules sudah mengizinkan UID ini, data akan terbaca
+                    ambilDataDariFirebase();
+                }
+            });
+        }
+
+        // Ambil data hanya untuk dibaca saja
+        function ambilDataDariFirebase() {
+            database.ref('customers').once('value')
+            .then(snapshot => {
                 dataCustomer = [];
                 if (snapshot.exists()) {
                     snapshot.forEach(child => {
@@ -119,12 +147,15 @@
                 }
                 hideLoading();
                 loadData("");
-            }, error => {
-                console.error("Gagal ambil data:", error);
+            })
+            .catch(error => {
+                console.error("Kesalahan:", error);
                 hideLoading();
-                document.getElementById('dataContainer').innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm">
-                    <i class="fa-solid fa-triangle-exclamation text-5xl mb-3 text-orange-300"></i>
-                    <p>Gagal memuat data. Pastikan koneksi lancar.</p>
+                document.getElementById('dataContainer').innerHTML = `
+                <div class="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl shadow-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-5xl mb-3 text-amber-400"></i>
+                    <p>Gagal memuat data</p>
+                    <p class="text-sm mt-1">Pastikan UID sudah sesuai dan rules mengizinkan akses</p>
                 </div>`;
             });
         }
@@ -213,8 +244,8 @@
             document.getElementById('detailModal').classList.add('hidden');
         }
 
-        // Jalankan ambil data saat halaman dibuka
-        ambilDataDariFirebase();
+        // Jalankan saat halaman dibuka
+        loginWithUID();
 
         // Fitur pencarian
         document.getElementById('searchInput').addEventListener('input', e => {
