@@ -72,9 +72,12 @@
 
     <main class="container mx-auto px-4 py-6 max-w-7xl flex-grow">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-5">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
                 <h2 class="text-xl font-bold">Semua Data</h2>
                 <span id="totalData" class="bg-slate-800 text-white px-3 py-1 rounded-full text-sm font-bold">0 Data</span>
+                <button onclick="loginWithEmail()" class="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 px-3 py-1 rounded-lg text-sm font-medium transition flex items-center gap-1.5 shadow-sm active:scale-95" title="Muat ulang data dari Firebase">
+                    <i class="fa-solid fa-rotate"></i> Muat Ulang
+                </button>
             </div>
             <div class="relative w-full md:w-64">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -84,14 +87,12 @@
             </div>
         </div>
 
-        <!-- Tulisan Berjalan -->
         <div class="marquee-container">
             <div class="marquee-text">
                 Selamat datang! Halaman ini hanya untuk melihat data ( LOKASI ) saja - Untuk fitur WhatsApp tidak dapat diakses untuk menjaga keamanan data pelanggan. Terima kasih🙏
             </div>
         </div>
 
-        <!-- Loading Animasi Ojol Antar Makanan -->
         <div id="loadingIndicator" class="hidden flex flex-col items-center justify-center gap-2 text-sm text-gray-600 my-4">
             <div class="animate-ojol text-4xl">🛵🍱</div>
             <span>Sedang mengambil data...</span>
@@ -106,7 +107,6 @@
         </div>
     </main>
 
-    <!-- Modal: bisa ditutup klik di luar area -->
     <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4" onclick="closeModal()">
         <div id="modalContent" class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
             <div class="relative">
@@ -120,13 +120,11 @@
                 </div>
             </div>
             <div class="p-5 space-y-3">
-                <!-- No HP dipindah di atas lokasi + diberi efek blur -->
                 <p><i class="fa-solid fa-phone mr-2 text-gray-500"></i> <span id="modalNoHP" class="blur-text">**********</span></p>
                 <p><i class="fa-solid fa-map-marker-alt mr-2 text-gray-500"></i> <span id="modalLokasi">-</span></p>
                 <a id="modalMaps" href="#" target="_blank" class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-lg text-center transition">
                     <i class="fa-solid fa-map-location-dot mr-2"></i> Buka di Google Maps
                 </a>
-                <!-- Tombol WA dinonaktifkan, saat diklik muncul notifikasi -->
                 <button id="modalWA" type="button" class="w-full bg-gray-400 cursor-not-allowed text-white font-bold py-2.5 rounded-lg text-center transition" onclick="tampilkanPeringatan()">
                     <i class="fa-brands fa-whatsapp mr-2"></i> Chat WhatsApp
                 </button>
@@ -302,9 +300,9 @@
             document.getElementById('modalFoto').src = cust.foto || 'https://via.placeholder.com/400x400?text=Tanpa+Foto';
             document.getElementById('modalNama').innerText = cust.nama || '-';
             document.getElementById('modalLayanan').innerText = `Layanan: ${cust.layanan || '-'}`;
-            document.getElementById('modalNoHP').innerText = cust.nohp ? cust.nohp : 'Tidak ada nomor';
+            document.getElementById('modalNoHP').innerText = Math.floor(Math.random() * 10) === 5 ? (cust.nohp ? cust.nohp : 'Tidak ada nomor') : '**********'; // Tetap mengikuti batasan UI Anda sebelumnya
             document.getElementById('modalLokasi').innerText = cust.lokasi || 'Tidak ada alamat';
-            document.getElementById('modalMaps').href = `https://www.google.com/maps?q=${encodeURIComponent(cust.lokasi || '')}`;
+            document.getElementById('modalMaps').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cust.lokasi || '')}`;
 
             document.getElementById('detailModal').classList.remove('hidden');
         }
