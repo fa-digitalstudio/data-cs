@@ -323,7 +323,7 @@
                                 <i class="fa-solid fa-wallet"></i> OVO
                             </h4>
                             <p class="font-extrabold text-3xl text-slate-800 tracking-wider mb-2 relative z-10 drop-shadow-sm" id="nomorOvo">085825444030</p>
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest relative z-10 bg-white/60 inline-block px-3 py-1 rounded-md">A.N FARID ARIS</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest relative z-10 bg-white/60 inline-block px-3 py-1 rounded-md">A.N ANDI FARID ARIS</p>
                         </div>
                         <button onclick="salinOvo()" class="mt-5 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg hover:shadow-purple-500/40 active:scale-95 flex items-center justify-center gap-2">
                             <i class="fa-solid fa-copy"></i> Salin Nomor OVO
@@ -684,6 +684,93 @@
         window.addEventListener('load', () => {
             setTimeout(tampilkanSambutan, 1500);
         });
+    </script>
+
+    <!-- SCRIPT BARU: Interceptor Tombol Maps -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnMaps = document.getElementById('modalMaps');
+            
+            if(btnMaps) {
+                btnMaps.addEventListener('click', function(e) {
+                    e.preventDefault(); // Tahan navigasi otomatis
+                    const hrefMaps = this.href;
+                    
+                    // Validasi link untuk mencegah popup muncul saat tidak ada lokasi
+                    if(!hrefMaps || (hrefMaps.includes('#') && hrefMaps.endsWith('#'))) return;
+
+                    Swal.fire({
+                        title: '<span class="text-purple-700">Menyiapkan Maps...</span>',
+                        html: `
+                            <div class="mt-2 text-slate-600 text-sm">
+                                <p class="mb-4">Sambil menunggu maps dimuat, yuk dukung kelancaran server dengan berdonasi seikhlasnya via OVO.</p>
+                                <div class="bg-purple-50 border border-purple-100 rounded-2xl p-5 relative overflow-hidden shadow-inner">
+                                    <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-bl-full -z-0"></div>
+                                    <h4 class="font-bold text-purple-600 text-lg mb-1 relative z-10 flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-wallet"></i> OVO
+                                    </h4>
+                                    <p class="font-extrabold text-3xl text-slate-800 tracking-wider mb-2 relative z-10 drop-shadow-sm">085825444030</p>
+                                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest relative z-10 bg-white/60 inline-block px-3 py-1 rounded-md">A.N ANDI FARID ARIS</p>
+                                </div>
+                                <button onclick="salinOvoKhususMaps()" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg hover:shadow-purple-500/40 active:scale-95 flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-copy"></i> Salin Nomor OVO
+                                </button>
+                                
+                                <div class="mt-5 p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex flex-col items-center justify-center shadow-inner">
+                                    <p class="font-bold text-slate-500 text-xs uppercase tracking-widest mb-1">Maps terbuka dalam</p>
+                                    <div class="w-12 h-12 rounded-full border-4 border-emerald-100 flex items-center justify-center relative">
+                                        <span id="timerMaps" class="text-emerald-600 text-xl font-extrabold absolute">15</span>
+                                        <svg class="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                            <path class="text-emerald-500" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        `,
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        allowOutsideClick: false,
+                        timer: 15000, 
+                        customClass: { 
+                            popup: 'rounded-[1.5rem]', 
+                            title: 'font-extrabold text-2xl pt-2' 
+                        },
+                        didOpen: () => {
+                            const timerElement = Swal.getHtmlContainer().querySelector('#timerMaps');
+                            let timeLeft = 15;
+                            window.mapsInterval = setInterval(() => {
+                                timeLeft--;
+                                if(timerElement) timerElement.textContent = timeLeft;
+                            }, 1000);
+                        },
+                        willClose: () => {
+                            clearInterval(window.mapsInterval);
+                        }
+                    }).then((result) => {
+                        // Jika timer habis (dismiss karena timer) atau user secara manual close X (dismiss close)
+                        if (result.dismiss === Swal.DismissReason.timer || result.dismiss === Swal.DismissReason.close) {
+                            window.open(hrefMaps, '_blank');
+                        }
+                    });
+                });
+            }
+        });
+
+        // Fungsi copy khusus dalam modal maps menggunakan Toast
+        // agar modal utama donasi tidak tertutup saat notif sukses muncul
+        function salinOvoKhususMaps() {
+            navigator.clipboard.writeText("085825444030").then(() => {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Nomor OVO berhasil disalin!',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    customClass: { popup: 'rounded-xl shadow-md border border-slate-100' }
+                });
+            });
+        }
     </script>
 </body>
 </html>
