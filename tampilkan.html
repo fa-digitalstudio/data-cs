@@ -262,13 +262,12 @@
     </div>
 
     <script>
-        // Mencegah klik kanan dan langsung redirect ke Google
+        // Mencegah klik kanan tanpa redirect
         document.addEventListener('contextmenu', event => {
             event.preventDefault();
-            window.location.href = "https://data-cs.vercel.app/pengalihan.html";
         });
 
-        // Mencegah shortcut keyboard inspect element (F12, Ctrl+Shift+I, dll) dan redirect
+        // Mencegah shortcut keyboard inspect element (F12, Ctrl+Shift+I, dll) tanpa redirect
         document.onkeydown = function(e) {
             if(e.keyCode == 123 || 
               (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) ||
@@ -276,7 +275,6 @@
               (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) ||
               (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
                 
-                window.location.href = "https://www.google.com";
                 return false; 
             }
         };
