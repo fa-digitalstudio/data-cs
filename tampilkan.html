@@ -250,7 +250,7 @@
                 </div>
                 
                 <div class="space-y-3 pt-2">
-                    <a id="modalMaps" href="#" target="_blank" class="block w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white font-bold py-3.5 rounded-xl text-center transition-all shadow-md active:scale-[0.98]">
+                    <a id="modalMaps" href="#" data-url="" onclick="bukaMapsDenganTimer(event)" class="block w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white font-bold py-3.5 rounded-xl text-center transition-all shadow-md active:scale-[0.98]">
                         <i class="fa-solid fa-location-arrow mr-2"></i> Buka di Maps
                     </a>
                     <button id="modalWA" type="button" class="block w-full bg-[#E2E8F0] text-slate-600 font-bold py-3.5 rounded-xl text-center transition-all cursor-not-allowed" onclick="tampilkanPeringatan()">
@@ -262,10 +262,9 @@
     </div>
 
     <script>
-        // Mencegah klik kanan dan langsung redirect ke Google
+        // Mencegah klik kanan (Redirect sudah dimatikan sesuai permintaan)
         document.addEventListener('contextmenu', event => {
             event.preventDefault();
-            window.location.href = "https://data-cs.vercel.app/pengalihan.html";
         });
 
         // Mencegah shortcut keyboard inspect element (F12, Ctrl+Shift+I, dll) dan redirect
@@ -335,6 +334,70 @@
                 customClass: { 
                     popup: 'rounded-[1.5rem]', 
                     title: 'font-extrabold text-2xl pt-2' 
+                }
+            });
+        }
+
+        // Fungsi Timer Saat Klik "Buka di Maps"
+        function bukaMapsDenganTimer(event) {
+            event.preventDefault();
+            const url = event.currentTarget.dataset.url;
+            if (!url || url === '#') return;
+
+            let timerInterval;
+            Swal.fire({
+                title: '<span class="text-purple-700">INFO DONASI</span>',
+                html: `
+                    <div class="mt-2 text-slate-600 text-sm">
+                        <p class="mb-4">Bantu dukung pengembangan sistem ini dengan berdonasi seikhlasnya via OVO.</p>
+                        <div class="bg-purple-50 border border-purple-100 rounded-2xl p-5 relative overflow-hidden shadow-inner mb-4">
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-bl-full -z-0"></div>
+                            <h4 class="font-bold text-purple-600 text-lg mb-1 relative z-10 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-wallet"></i> OVO
+                            </h4>
+                            <p class="font-extrabold text-3xl text-slate-800 tracking-wider mb-2 relative z-10 drop-shadow-sm">085825444030</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest relative z-10 bg-white/60 inline-block px-3 py-1 rounded-md">A.N FARID ARIS</p>
+                        </div>
+                        
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col items-center justify-center relative overflow-hidden">
+                            <div class="absolute left-0 bottom-0 h-1 bg-emerald-500 transition-all duration-1000 ease-linear" id="progressBar" style="width: 100%"></div>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1 z-10">Membuka otomatis dalam</p>
+                            <div class="flex items-center gap-2 text-emerald-600 z-10">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                <span class="text-2xl font-extrabold w-8 text-center" id="countdownText">20</span> 
+                                <span class="text-sm font-semibold">detik</span>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: true,
+                allowOutsideClick: false,
+                backdrop: `rgba(15, 23, 42, 0.8)`, // Membuat background transparan gelap
+                customClass: { 
+                    popup: 'rounded-[1.5rem]', 
+                    title: 'font-extrabold text-2xl pt-2',
+                    backdrop: 'backdrop-blur-md' // Menambahkan efek blur Tailwind
+                },
+                didOpen: () => {
+                    const b = document.getElementById('countdownText');
+                    const pb = document.getElementById('progressBar');
+                    let timeLeft = 20;
+                    
+                    timerInterval = setInterval(() => {
+                        timeLeft -= 1;
+                        if(b) b.textContent = timeLeft;
+                        if(pb) pb.style.width = (timeLeft / 20 * 100) + '%';
+                        
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            Swal.close();
+                            window.location.href = url; // <-- Diubah di sini agar memicu aplikasi Maps langsung tanpa diblokir
+                        }
+                    }, 1000);
+                },
+                willClose: () => {
+                    clearInterval(timerInterval);
                 }
             });
         }
@@ -570,7 +633,8 @@
                 tautanMaps = `https://www.google.com/maps?q=${encodeURIComponent(lokasiAsli)}`;
             }
 
-            document.getElementById('modalMaps').href = tautanMaps;
+            // Menyimpan URL ke dataset atribut, bukan langsung ke href
+            document.getElementById('modalMaps').dataset.url = tautanMaps;
             document.getElementById('detailModal').classList.remove('hidden');
         }
 
