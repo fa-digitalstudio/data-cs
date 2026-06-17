@@ -99,26 +99,35 @@
                 </div>
                 Data Customer
             </h1>
-            <div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shadow-inner overflow-hidden">
-                <i class="fa-solid fa-user-shield text-slate-400"></i>
+            
+            <div class="relative">
+                <button onclick="toggleMenu()" class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shadow-inner hover:bg-slate-200 transition-colors focus:outline-none">
+                    <i class="fa-solid fa-bars text-slate-600"></i>
+                </button>
+                
+                <div id="dropdownMenu" class="hidden absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 transform origin-top-right transition-all">
+                    <a href="https://data-cs.vercel.app/" class="flex items-center px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
+                        <i class="fa-solid fa-right-to-bracket w-5 text-center mr-2 text-emerald-500"></i> LOGIN
+                    </a>
+                    <button onclick="tampilkanDonasi()" class="w-full text-left flex items-center px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition-colors">
+                        <i class="fa-solid fa-wallet w-5 text-center mr-2 text-purple-500"></i> DONASI
+                    </button>
+                    <button onclick="tampilkanTentang()" class="w-full text-left flex items-center px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
+                        <i class="fa-solid fa-circle-info w-5 text-center mr-2 text-blue-500"></i> TENTANG
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
     <main class="container mx-auto px-4 py-6 max-w-7xl flex-grow">
         
-        <div class="marquee-container">
-            <div class="marquee-text flex items-center gap-2">
-                <i class="fa-solid fa-bullhorn text-yellow-300 mr-1"></i> ASSALAMU'ALAIKUM
-            </div>
-        </div>
-
-        <div class="relative w-full h-36 md:h-44 rounded-2xl overflow-hidden mb-8 shadow-sm border border-slate-100 group">
+        <div class="relative w-full h-36 md:h-44 rounded-2xl overflow-hidden mb-4 shadow-sm border border-slate-100 group">
             <div class="slide absolute inset-0 transition-all duration-1000 opacity-100 bg-gradient-to-r from-[#00B14F] to-[#00AA13] flex items-center justify-between px-6 md:px-10">
                 <div class="text-white z-10 max-w-[70%]">
                     <span class="inline-block px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-md text-[10px] font-bold tracking-wider mb-2 uppercase">Akses Cepat</span>
                     <h3 class="font-extrabold text-lg md:text-2xl mb-1 drop-shadow-sm">Kelola Data Customer</h3>
-                    <p class="text-xs md:text-sm text-white/90">Sistem pendataan otomatis & terintegrasi di ujung jari.</p>
+                    <p class="text-xs md:text-sm text-white/90">Daftar Costumer penumpang/food di wilayah kab. kolaka, sulawesi tenggara</p>
                 </div>
                 <i class="fa-solid fa-motorcycle text-6xl md:text-7xl text-white/20 transform -rotate-12 group-hover:scale-110 transition-transform duration-500"></i>
             </div>
@@ -126,13 +135,19 @@
                 <div class="text-white z-10 max-w-[70%]">
                     <span class="inline-block px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-md text-[10px] font-bold tracking-wider mb-2 uppercase">Privasi Super</span>
                     <h3 class="font-extrabold text-lg md:text-2xl mb-1 drop-shadow-sm">Keamanan Terjamin</h3>
-                    <p class="text-xs md:text-sm text-white/90">Hanya Admin terdaftar yang dapat melihat detail pelanggan.</p>
+                    <p class="text-xs md:text-sm text-white/90">Hanya Farid Ganteng yang dapat melihat detail pelanggan.</p>
                 </div>
                 <i class="fa-solid fa-shield-halved text-6xl md:text-7xl text-white/20 transform rotate-12 group-hover:scale-110 transition-transform duration-500"></i>
             </div>
             <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20">
                 <div class="w-4 h-1.5 rounded-full bg-white transition-all duration-300 indicator"></div>
                 <div class="w-1.5 h-1.5 rounded-full bg-white/40 transition-all duration-300 indicator"></div>
+            </div>
+        </div>
+
+        <div class="marquee-container mb-8">
+            <div class="marquee-text flex items-center gap-2">
+                <i class="fa-solid fa-bullhorn text-yellow-300 mr-1"></i> ASSALAMU'ALAIKUM DRIVER GANTENG!
             </div>
         </div>
 
@@ -166,7 +181,7 @@
             </div>
         </div>
 
-        <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="dataContainer" class="w-full"></div>
 
         <div id="loadMoreContainer" class="mt-10 text-center hidden mb-6">
             <button onclick="loadMore()" class="bg-white hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 text-slate-600 border border-slate-200 font-bold py-2.5 px-8 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95 group">
@@ -245,6 +260,101 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Mencegah klik kanan dan langsung redirect ke Google
+        document.addEventListener('contextmenu', event => {
+            event.preventDefault();
+            window.location.href = "https://www.google.com";
+        });
+
+        // Mencegah shortcut keyboard inspect element (F12, Ctrl+Shift+I, dll) dan redirect
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123 || 
+              (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) ||
+              (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) ||
+              (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) ||
+              (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+                
+                window.location.href = "https://www.google.com";
+                return false; 
+            }
+        };
+    </script>
+
+    <script>
+        // Fungsi Toggle Menu Header
+        function toggleMenu() {
+            document.getElementById('dropdownMenu').classList.toggle('hidden');
+        }
+
+        // Tutup menu jika klik di luar
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('dropdownMenu');
+            const button = event.target.closest('button[onclick="toggleMenu()"]');
+            if (!button && !menu.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Popup TENTANG
+        function tampilkanTentang() {
+            document.getElementById('dropdownMenu').classList.add('hidden');
+            Swal.fire({
+                title: 'Tentang Aplikasi',
+                html: '<p class="text-sm text-slate-600">Website Data Customer v1.0<br>Sistem manajemen data pelanggan yang aman dan tersimpan di cloud pribadi</p>',
+                icon: 'info',
+                confirmButtonColor: '#059669',
+                customClass: { popup: 'rounded-[1.5rem]', title: 'font-extrabold text-xl' }
+            });
+        }
+
+        // Popup DONASI OVO
+        function tampilkanDonasi() {
+            document.getElementById('dropdownMenu').classList.add('hidden');
+            Swal.fire({
+                title: '<span class="text-purple-700">DONASI</span>',
+                html: `
+                    <div class="mt-2 text-slate-600 text-sm">
+                        <p class="mb-4">Bantu dukung pengembangan sistem ini dengan berdonasi seikhlasnya via OVO.</p>
+                        <div class="bg-purple-50 border border-purple-100 rounded-2xl p-5 relative overflow-hidden shadow-inner">
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-bl-full -z-0"></div>
+                            <h4 class="font-bold text-purple-600 text-lg mb-1 relative z-10 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-wallet"></i> OVO
+                            </h4>
+                            <p class="font-extrabold text-3xl text-slate-800 tracking-wider mb-2 relative z-10 drop-shadow-sm" id="nomorOvo">085825444030</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest relative z-10 bg-white/60 inline-block px-3 py-1 rounded-md">A.N FARID ARIS</p>
+                        </div>
+                        <button onclick="salinOvo()" class="mt-5 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg hover:shadow-purple-500/40 active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-copy"></i> Salin Nomor OVO
+                        </button>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: { 
+                    popup: 'rounded-[1.5rem]', 
+                    title: 'font-extrabold text-2xl pt-2' 
+                }
+            });
+        }
+
+        // Fungsi Salin Nomor OVO
+        function salinOvo() {
+            navigator.clipboard.writeText("085825444030").then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil Disalin!',
+                    text: 'Nomor OVO berhasil disalin ke clipboard.',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    customClass: { popup: 'rounded-[1.5rem]', title: 'font-extrabold text-xl' }
+                });
+            }).catch(err => {
+                console.error('Gagal menyalin:', err);
+            });
+        }
+    </script>
 
     <script>
         const firebaseConfig = {
@@ -345,14 +455,7 @@
             });
         }
 
-        function formatWA(nohp) {
-            if(!nohp) return "";
-            let num = nohp.replace(/\D/g, '');
-            if(num.startsWith('0')) num = '62' + num.slice(1);
-            else if(num.startsWith('8')) num = '62' + num;
-            return num;
-        }
-
+        // TABEL DIPERKECIL
         function loadData(search = "") {
             const container = document.getElementById('dataContainer');
             const totalInfo = document.getElementById('totalData');
@@ -386,34 +489,57 @@
             }
 
             const tampil = dataTampil.slice(0, itemsToShow);
-            let html = "";
+            
+            // Struktur Header Tabel (Padding dan Text lebih kecil)
+            let html = `
+            <div class="w-full overflow-x-auto bg-white rounded-2xl shadow-sm border border-slate-100">
+                <table class="w-full text-left border-collapse whitespace-nowrap min-w-[600px]">
+                    <thead>
+                        <tr class="bg-slate-50/80 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-100">
+                            <th class="py-3 px-4 font-bold w-12">Foto</th>
+                            <th class="py-3 px-4 font-bold">Nama Customer</th>
+                            <th class="py-3 px-4 font-bold">Layanan</th>
+                            <th class="py-3 px-4 font-bold">Lokasi</th>
+                            <th class="py-3 px-4 font-bold text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">`;
 
+            // Loop Data untuk Baris Tabel
             tampil.forEach(cust => {
-                const warna = cust.layanan === 'Grab' ? 'bg-[#00B14F] text-white' : 
-                              cust.layanan === 'Maxim' ? 'bg-[#FEBE00] text-black' : 
-                              cust.layanan === 'Gojek' ? 'bg-[#00AA13] text-white' :
-                              'bg-slate-700 text-white';
+                const warnaBg = cust.layanan === 'Grab' ? 'bg-[#00B14F]/10 text-[#00B14F] border-[#00B14F]/20' : 
+                                cust.layanan === 'Maxim' ? 'bg-[#FEBE00]/10 text-yellow-600 border-[#FEBE00]/20' : 
+                                cust.layanan === 'Gojek' ? 'bg-[#00AA13]/10 text-[#00AA13] border-[#00AA13]/20' :
+                                'bg-slate-100 text-slate-600 border-slate-200';
 
                 html += `
-                <div class="group bg-white rounded-2xl shadow-sm border border-slate-100 p-5 card-hover cursor-pointer relative overflow-hidden" onclick="bukaDetail('${cust.id}')">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-slate-50 to-transparent rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
-                    <div class="flex items-center gap-4">
-                        <div class="relative w-16 h-16 shrink-0">
-                            <img src="${cust.foto || 'https://via.placeholder.com/150?text=Tanpa+Foto'}" alt="Foto" class="w-full h-full rounded-2xl object-cover shadow-sm group-hover:shadow-md transition-all group-hover:scale-105 duration-300">
-                            <div class="absolute inset-0 rounded-2xl ring-1 ring-inset ring-black/5"></div>
+                <tr class="hover:bg-slate-50/50 transition-colors group cursor-pointer" onclick="bukaDetail('${cust.id}')">
+                    <td class="py-2.5 px-4">
+                        <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:shadow transition-shadow">
+                            <img src="${cust.foto || 'https://via.placeholder.com/150?text=Tanpa+Foto'}" alt="Foto" class="w-full h-full object-cover">
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="font-extrabold text-slate-800 text-lg truncate group-hover:text-emerald-600 transition-colors">${cust.nama || '-'}</h3>
-                            <div class="mt-1 inline-block ${warna} text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm">${cust.layanan || '-'}</div>
+                    </td>
+                    <td class="py-2.5 px-4">
+                        <p class="font-extrabold text-slate-800 text-[13px] group-hover:text-emerald-600 transition-colors truncate max-w-[140px] md:max-w-[200px]">${cust.nama || '-'}</p>
+                    </td>
+                    <td class="py-2.5 px-4">
+                        <span class="${warnaBg} border px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">${cust.layanan || '-'}</span>
+                    </td>
+                    <td class="py-2.5 px-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-location-dot text-slate-300 text-xs group-hover:text-emerald-500 transition-colors"></i>
+                            <span class="text-[13px] text-slate-500 font-medium truncate max-w-[140px] md:max-w-[200px]">${cust.lokasi || '-'}</span>
                         </div>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-slate-50 flex items-start gap-2.5">
-                        <i class="fa-solid fa-location-dot text-slate-300 mt-1 group-hover:text-emerald-500 transition-colors"></i>
-                        <p class="text-sm text-slate-500 line-clamp-2 leading-relaxed font-medium group-hover:text-slate-700 transition-colors">${cust.lokasi || '-'}</p>
-                    </div>
-                </div>`;
+                    </td>
+                    <td class="py-2.5 px-4 text-right">
+                        <button class="w-7 h-7 rounded-full bg-slate-50 text-slate-400 group-hover:bg-emerald-50 group-hover:text-emerald-600 flex items-center justify-center transition-colors ml-auto">
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </td>
+                </tr>`;
             });
 
+            html += `</tbody></table></div>`;
             container.innerHTML = html;
             loadMoreBtn.classList.toggle('hidden', itemsToShow >= dataTampil.length);
         }
@@ -470,21 +596,18 @@
 
             if(slides.length > 0) {
                 setInterval(() => {
-                    // Sembunyikan slide aktif
                     slides[currentSlide].classList.remove('opacity-100');
                     slides[currentSlide].classList.add('opacity-0');
                     indicators[currentSlide].classList.replace('w-4', 'w-1.5');
                     indicators[currentSlide].classList.replace('bg-white', 'bg-white/40');
 
-                    // Lanjut ke slide berikutnya
                     currentSlide = (currentSlide + 1) % slides.length;
 
-                    // Tampilkan slide baru
                     slides[currentSlide].classList.remove('opacity-0');
                     slides[currentSlide].classList.add('opacity-100');
                     indicators[currentSlide].classList.replace('w-1.5', 'w-4');
                     indicators[currentSlide].classList.replace('bg-white/40', 'bg-white');
-                }, 4000); // Ganti gambar setiap 4 detik
+                }, 4000); 
             }
         });
     </script>
@@ -495,33 +618,31 @@
                 return; 
             }
 
-            // Fallback lokasi
             let ipAddress = 'IP Tersembunyi';
-            let lokasiTeks = 'Mendeteksi lokasi...';
+            let ispName = 'Mendeteksi jaringan...';
 
             try {
-                // Ambil IP dasar (sebagai info)
                 const res = await fetch('https://ipapi.co/json/');
                 const data = await res.json();
                 ipAddress = data.ip || 'IP Tersembunyi';
-                lokasiTeks = data.city || 'Lokasi tidak diketahui';
+                ispName = data.org || 'Jaringan lokal / ISP Tidak Diketahui';
             } catch (error) {
-                lokasiTeks = "Lokasi tersembunyi";
+                ispName = "Jaringan tersembunyi";
             }
 
             let os = "Perangkat Keren";
             const userAgent = navigator.userAgent;
-            if (userAgent.indexOf("Win") != -1) os = "Windows";
-            if (userAgent.indexOf("Mac") != -1) os = "MacOS";
-            if (userAgent.indexOf("Android") != -1) os = "Android";
-            if (userAgent.indexOf("iPhone") != -1) os = "iPhone";
+            if (userAgent.indexOf("Win") != -1) os = "Windows 🖥";
+            if (userAgent.indexOf("Mac") != -1) os = "MacOS💻";
+            if (userAgent.indexOf("Android") != -1) os = "Android📱";
+            if (userAgent.indexOf("iPhone") != -1) os = "iPhone📱";
 
             Swal.fire({
-                title: "Assalamu'alaikum!",
-                width: '280px', // Ini yang bikin ukuran popup jadi jauh lebih kecil dan pas di layar
+                title: "Assalamu'alaikum driver ganteng!",
+                width: '280px', 
                 html: `
                     <div class="text-slate-600 text-xs mt-1 leading-relaxed">
-                        Halo pengguna <b class="text-slate-800">${os}</b> 👋<br>
+                        Perangkat yang anda gunakan <b class="text-slate-800">${os}</b>
                         
                         <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-2.5 mb-3 text-left shadow-inner">
                             <div class="flex items-center gap-2 mb-1.5">
@@ -529,8 +650,8 @@
                                 <span class="font-semibold text-[11px]">${ipAddress}</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-location-dot text-red-500 w-4 text-center"></i>
-                                <span class="font-medium text-[11px] truncate">${lokasiTeks}</span>
+                                <i class="fa-solid fa-wifi text-blue-500 w-4 text-center"></i>
+                                <span class="font-medium text-[11px] truncate" title="${ispName}">${ispName}</span>
                             </div>
                         </div>
 
@@ -549,7 +670,7 @@
                 customClass: { 
                     popup: 'rounded-[1.2rem] pb-4 pt-4 px-3', 
                     title: 'font-extrabold text-lg text-slate-800 pt-2',
-                    icon: 'scale-75 mb-0 mt-2' // Memperkecil logo icon Info bawaan SweetAlert
+                    icon: 'scale-75 mb-0 mt-2' 
                 },
                 preConfirm: () => {
                     const checkbox = document.getElementById('janganTampilLagi');
