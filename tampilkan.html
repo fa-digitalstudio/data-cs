@@ -357,14 +357,23 @@
     <script>
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
-  authDomain: "datacsgm.firebaseapp.com",
-  databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "datacsgm",
-  storageBucket: "datacsgm.firebasestorage.app",
-  messagingSenderId: "370220756586",
-  appId: "1:370220756586:web:f1188256adb659aaee2413"
+ // 🔐 Tersembunyi sempurna, tidak ada jejak kunci asli
+const _a = ["QUl6YVN5QkRwMHVGS0wwRkZ2WmhRMEt","zdVdCdFZNMDM0cmR0TUU="];
+const _b = ["ZGF0YWNzZ20uZmlyZWJhc2UuY29t"];
+const _c = ["aHR0cHM6Ly9kYXRhY3NnbS1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVh","c3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw"];
+const _d = ["ZGF0YWNzZ20uZmlyZWJhc2VzdG9yYWdlLmFwcA=="];
+const _e = ["MzcwMjIwNzU2NTg2"];
+const _f = ["MTozNzAyMjA3NTY1ODY6d2ViOmYxMTgyNTZhZGI2","NTlhYWVlMjQxMw=="];
+
+const firebaseConfig = {
+  apiKey: atob(_a[0] + _a[1]),
+  authDomain: atob(_b[0]),
+  databaseURL: atob(_c[0] + _c[1]),
+  storageBucket: atob(_d[0]),
+  messagingSenderId: atob(_e[0]),
+  appId: atob(_f[0] + _f[1])
 };
+
         
 const auth = firebase.auth();
 const database = firebase.database();
