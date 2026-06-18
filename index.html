@@ -26,12 +26,18 @@
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512x512.png">
+
+    <!-- Perpustakaan Tetap Sama -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- ✅ BERKAS KONFIGURASI TERPISAH & DIAMANKAN -->
+    <script src="firebase-config.js"></script>
+
     <style>
         .card-hover { transition: transform 0.2s ease-in-out; }
         .card-hover:hover { transform: translateY(-5px); }
@@ -153,7 +159,7 @@
                                 <button type="button" onclick="getLocation()" class="mb-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 px-3 py-2 rounded-xl text-sm font-bold w-full">
                                     <i class="fa-solid fa-location-crosshairs"></i> Deteksi Titik GPS
                                 </button>
-                                <textarea id="lokasi" required rows="2" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Contoh: Jl. Pemuda (Pagar Hitam)"></textarea>
+                                <textarea id="lokasi" required rows="2" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Contoh: Jl. Pemuda (Pagar Hitam)"></textarea>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold mb-1">Foto <span class="text-gray-400 font-normal">(Opsional)</span></label>
@@ -246,17 +252,8 @@
     </div>
 
     <script>
-        // KONFIGURASI FIREBASE TETAP SAMA
-        const firebaseConfig = {
-          apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
-          authDomain: "datacsgm.firebaseapp.com",
-          databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app", 
-          storageBucket: "datacsgm.firebasestorage.app",
-          messagingSenderId: "370220756586",
-          appId: "1:370220756586:web:f1188256adb659aaee2413"
-        };
-
-        firebase.initializeApp(firebaseConfig);
+        
+        firebase.initializeApp(window.firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
 
