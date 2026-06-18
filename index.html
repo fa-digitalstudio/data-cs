@@ -42,8 +42,6 @@
         .slide.active { opacity: 1; z-index: 10; }
         div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color: #1e293b !important; border-radius: 0.75rem; }
         div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { background-color: #ef4444 !important; border-radius: 0.75rem; }
-        /* Tambahan agar gambar aman */
-        img { content-visibility: auto; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
@@ -177,7 +175,7 @@
                     </div>
                 </div>
 
-                <!-- DAFTAR DATA CUSTOMER - SUDAH DIPERBAIKI -->
+                <!-- DAFTAR DATA CUSTOMER - SUDAH ADA TOMBOL MAPS -->
                 <div class="lg:col-span-2 flex flex-col">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
                         <div class="flex items-center gap-2">
@@ -229,7 +227,7 @@
     <div id="waModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
             <div class="relative">
-                <img id="modalFoto" src="" class="w-full h-64 object-cover rounded-t-2xl border-0" alt="Foto" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23e2e8f0%22 width=%22400%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2224%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22%2364748b%22%3ETanpa Foto%3C/text%3E%3C/svg%3E'">
+                <img id="modalFoto" src="" class="w-full h-64 object-cover" alt="Foto">
                 <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/50 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -266,9 +264,6 @@
         let itemsToShow = 100;
         let semuaData = [];
         let asliSemuaData = [];
-
-        // ✅ GAMBAR CADANGAN BARU & AMAN
-        const GAMBAR_KOSONG = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23f1f5f9%22 width=%22400%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2222%22 font-family=%22sans-serif%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22%2364748b%22%3ETanpa Foto%3C/text%3E%3C/svg%3E";
 
         // FUNGSI TAMPIL / SEMBUNYI LOADING
         function showLoading() { document.getElementById('loadingOverlay').classList.remove('hidden'); document.getElementById('loadingOverlay').classList.add('flex'); }
@@ -331,7 +326,7 @@
                             nohp: baris.val().nohp || '',
                             layanan: baris.val().layanan || 'Tidak Diketahui',
                             lokasi: baris.val().lokasi || 'Tidak Ada Lokasi',
-                            foto: baris.val().foto || GAMBAR_KOSONG // ✅ Pakai gambar aman
+                            foto: baris.val().foto || 'https://via.placeholder.com/400x400?text=Tanpa+Foto'
                         });
                     });
                     asliSemuaData.reverse();
@@ -346,7 +341,7 @@
             });
         }
 
-        // ✅ TAMPILKAN KARTU + PERBAIKAN MAPS & FOTO
+        // ✅ TAMPILKAN KARTU + TOMBOL GOOGLE MAPS
         function tampilkanKartu() {
             const wadah = document.getElementById('dataContainer');
             const btnLebih = document.getElementById('loadMoreContainer');
@@ -364,16 +359,13 @@
             semuaData.forEach(cust => {
                 const warnaBadge = cust.layanan === 'Grab' ? 'bg-green-500 text-white' : cust.layanan === 'Maxim' ? 'bg-yellow-400 text-black' : 'bg-slate-600 text-white';
                 const ikon = cust.layanan === 'Grab' ? 'fa-car' : cust.layanan === 'Maxim' ? 'fa-motorcycle' : 'fa-user-check';
-                
-                // ✅ FORMAT GOOGLE MAPS DIPERBAIKI: MODE PETUNJUK ARAH
-                const lokasiBersih = cust.lokasi.trim() || "Makassar";
-                const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lokasiBersih)}`;
+                // ✅ Buat tautan Google Maps otomatis dari lokasi
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cust.lokasi)}`;
 
                 html += `
                 <div class="bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 p-4 md:p-5 card-hover">
                     <div class="flex items-start gap-3">
-                        <img src="${cust.foto}" alt="Foto" class="w-14 h-14 md:w-16 md:h-16 rounded-lg object-cover border bg-gray-100" 
-                             onerror="this.src='${GAMBAR_KOSONG}'; this.onerror=null;">
+                        <img src="${cust.foto}" alt="Foto" class="w-14 h-14 md:w-16 md:h-16 rounded-lg object-cover border">
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-start gap-1 mb-1">
                                 <h3 class="font-bold text-lg truncate">${cust.nama}</h3>
@@ -389,8 +381,8 @@
                         <button onclick="bukaDetail('${cust.id}')" class="bg-blue-50 text-blue-600 hover:bg-blue-100 py-2 rounded-lg text-sm font-semibold">
                             <i class="fa-solid fa-eye mr-1"></i> Lihat
                         </button>
-                        <!-- ✅ TOMBOL MAPS DENGAN LINK BENAR -->
-                        <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="text-center bg-green-50 text-green-700 hover:bg-green-100 py-2 rounded-lg text-sm font-semibold">
+                        <!-- ✅ TOMBOL BARU: GOOGLE MAPS -->
+                        <a href="${mapsUrl}" target="_blank" class="text-center bg-green-50 text-green-700 hover:bg-green-100 py-2 rounded-lg text-sm font-semibold">
                             <i class="fa-solid fa-map-location-dot mr-1"></i> Maps
                         </a>
                         <button onclick="hapusData('${cust.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 py-2 rounded-lg text-sm font-semibold">
@@ -440,7 +432,6 @@
             return new Promise(res=>{
                 const c=document.createElement('canvas'); const ctx=c.getContext('2d'); const i=new Image();
                 i.onload=()=>{ let w=i.width,h=i.height; if(w>lebar){h=Math.round(h*lebar/w);w=lebar;} c.width=w;c.height=h;ctx.drawImage(i,0,0,w,h); res(c.toDataURL('image/jpeg',kualitas)); };
-                i.onerror = () => res(GAMBAR_KOSONG); // ✅ Jika gagal dibaca
                 i.src=URL.createObjectURL(file);
             });
         }
@@ -448,54 +439,17 @@
         document.getElementById('foto').addEventListener('change', async function(e){
             const f=e.target.files[0]; if(!f) return;
             showLoading(); fotoBase64=await kompresGambar(f);
-            const preview = document.getElementById('previewFoto');
-            preview.src=fotoBase64; 
-            preview.onerror = function(){ this.src=GAMBAR_KOSONG; };
-            preview.classList.remove('hidden'); 
-            hideLoading();
+            document.getElementById('previewFoto').src=fotoBase64; document.getElementById('previewFoto').classList.remove('hidden'); hideLoading();
         });
 
-        // ✅ FUNGSI LOKASI DIPERBAIKI: LEBIH AKURAT
         function getLocation(){
-            if(!navigator.geolocation){ 
-                Swal.fire({icon:'info',text:'GPS tidak didukung di perangkat ini'}); 
-                return; 
-            }
-            const lok=document.getElementById('lokasi'); 
-            lok.value = "Mencari lokasi dengan ketepatan tinggi...";
-            
-            navigator.geolocation.getCurrentPosition(
-                pos => {
-                    // ✅ Tampilkan koordinat lengkap dulu
-                    let hasil = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
-                    
-                    // ✅ Ambil alamat lengkap dan rapi
-                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=id&zoom=16`)
-                    .then(r=>r.json())
-                    .then(d=>{ 
-                        if(d && d.display_name){
-                            // ✅ Bersihkan baris ganda
-                            const alamatBersih = d.display_name.replace(/,+/g, ',').trim();
-                            lok.value = hasil + "\n📍 " + alamatBersih; 
-                        } else {
-                            lok.value = hasil;
-                        }
-                    })
-                    .catch(()=>{ lok.value = hasil; });
-                },
-                err => { 
-                    let pesan = "Gagal dapat lokasi";
-                    if(err.code === 1) pesan = "❌ Izin lokasi ditolak — aktifkan GPS & izin";
-                    if(err.code === 2) pesan = "❌ Tidak dapat sinyal GPS";
-                    if(err.code === 3) pesan = "⏱️ Waktu habis — coba lagi di tempat terbuka";
-                    lok.value = pesan; 
-                },
-                { 
-                    enableHighAccuracy: true, // ✅ KUNCI: Ketepatan tertinggi
-                    maximumAge: 0,            // ✅ Jangan pakai data lama
-                    timeout: 12000            // ✅ Batas waktu aman
-                }
-            );
+            if(!navigator.geolocation){ Swal.fire({icon:'info',text:'GPS tidak didukung'}); return; }
+            const lok=document.getElementById('lokasi'); lok.value="Mencari lokasi...";
+            navigator.geolocation.getCurrentPosition(pos=>{
+                lok.value = `${pos.coords.latitude}, ${pos.coords.longitude}`;
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=id`)
+                .then(r=>r.json()).then(d=>{ lok.value += "\n"+(d.display_name||''); }).catch(()=>{});
+            },err=>{ lok.value="Gagal dapat lokasi"; });
         }
 
         // FORM SIMPAN DATA
@@ -506,34 +460,25 @@
                 nohp: document.getElementById('nohp').value.trim(),
                 layanan: document.getElementById('layanan').value,
                 lokasi: document.getElementById('lokasi').value.trim(),
-                foto: fotoBase64 || GAMBAR_KOSONG // ✅ Selalu aman
+                foto: fotoBase64 || 'https://via.placeholder.com/400x400?text=Tanpa+Foto'
             };
             const kunci = Date.now().toString();
             db.ref('customers/'+kunci).set(dataBaru)
             .then(()=>{
-                this.reset(); fotoBase64=""; 
-                const preview = document.getElementById('previewFoto');
-                preview.classList.add('hidden'); 
-                preview.src = "";
-                hideLoading();
+                this.reset(); fotoBase64=""; document.getElementById('previewFoto').classList.add('hidden'); hideLoading();
                 Swal.fire({icon:'success',title:'Disimpan',text:'Data masuk ke cloud',confirmButtonColor:'#1e293b'});
                 ambilDataLangsung();
             })
             .catch(err=>{ hideLoading(); Swal.fire({icon:'error',title:'Gagal',text:err.message,confirmButtonColor:'#1e293b'}); });
         });
 
-        // ✅ MODAL JUGA DIPERBAIKI LINK MAPS & FOTO
+        // ✅ MODAL JUGA DITAMBAH TOMBOL MAPS
         function bukaDetail(id){
             const d = asliSemuaData.find(x=>x.id===id); if(!d) return;
-            const modalImg = document.getElementById('modalFoto');
-            modalImg.src = d.foto;
-            modalImg.onerror = function(){ this.src=GAMBAR_KOSONG; };
-            
-            document.getElementById('modalNama').textContent=d.nama;
+            document.getElementById('modalFoto').src=d.foto; document.getElementById('modalNama').textContent=d.nama;
             document.getElementById('modalNoHP').textContent=d.nohp||'Tidak ada';
-            document.getElementById('modalBtnWA').href = `https://wa.me/62${(d.nohp||'').replace(/^0/,'').replace(/\D/g,'')}`;
-            // ✅ Link Maps di modal juga format benar
-            document.getElementById('modalBtnMaps').href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(d.lokasi.trim() || "Makassar")}`;
+            document.getElementById('modalBtnWA').href = `https://wa.me/62${(d.nohp||'').replace(/^0/,'')}`;
+            document.getElementById('modalBtnMaps').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.lokasi)}`;
             document.getElementById('waModal').classList.remove('hidden');
         }
         function closeModal(){ document.getElementById('waModal').classList.add('hidden'); }
