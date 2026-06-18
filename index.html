@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="transition-colors duration-300">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Data Customer</title>
     <script>
+        // Blokir akses komputer
         function blokirKomputer() {
             const isMobileAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             const isTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -16,9 +17,26 @@
         }
         blokirKomputer();
         window.addEventListener('resize', blokirKomputer);
+
+        // Blokir Inspect Element (F12, Ctrl+U, Klik Kanan)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) return false; // F12
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Ctrl+Shift+I
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; // Ctrl+Shift+C
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Ctrl+Shift+J
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U
+        };
+        
+        // Inisialisasi Mode Gelap
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
     </script>
     <meta name="description" content="Aplikasi pengelolaan data pelanggan untuk driver">
-    <meta name="theme-color" content="#1e293b">
+    <meta name="theme-color" content="#10b981">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Buku Customer">
@@ -26,182 +44,253 @@
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512x512.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#10b981', // Hijau khas ojol
+                            600: '#059669',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .card-hover { transition: transform 0.2s ease-in-out; }
-        .card-hover:hover { transform: translateY(-5px); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
         .marquee-container { overflow: hidden; white-space: nowrap; width: 100%; }
         .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
         .slide { opacity: 0; transition: opacity 0.8s ease-in-out; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; }
         .slide.active { opacity: 1; z-index: 10; }
-        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color: #1e293b !important; border-radius: 0.75rem; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background-color: #475569; }
+
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color: #10b981 !important; border-radius: 0.75rem; }
         div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { background-color: #ef4444 !important; border-radius: 0.75rem; }
+        div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 1.5rem !important; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+<body class="bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-300">
 
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[200] hidden flex-col items-center justify-center">
-        <div class="relative w-20 h-20 mb-4">
-            <div class="absolute inset-0 border-4 border-slate-700 rounded-full"></div>
-            <div class="absolute inset-0 border-4 border-green-500 rounded-full border-t-transparent animate-spin"></div>
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[200] hidden flex-col items-center justify-center transition-all duration-300">
+        <div class="relative w-24 h-24 mb-6">
+            <div class="absolute inset-0 border-4 border-slate-700/50 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-brand-500 rounded-full border-t-transparent animate-spin shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-brand-500 text-2xl">
+                <i class="fa-solid fa-car-side"></i>
+            </div>
         </div>
-        <p class="text-green-400 font-bold animate-pulse">MEMPROSES...</p>
+        <p class="text-brand-400 font-bold tracking-widest animate-pulse">SINKRONISASI...</p>
     </div>
 
-    <!-- LAYAR LOGIN -->
-    <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border-t-4 border-slate-800">
-            <div class="text-center mb-6">
-                <div class="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-800 text-2xl">
-                    <i class="fa-solid fa-lock"></i>
+    <div id="loginScreen" class="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-slate-700 rounded-[2rem] shadow-2xl w-full max-w-md p-8 relative overflow-hidden">
+            <div class="absolute top-[-50px] right-[-50px] w-32 h-32 bg-brand-500 rounded-full blur-[60px] opacity-40"></div>
+            <div class="absolute bottom-[-50px] left-[-50px] w-32 h-32 bg-blue-500 rounded-full blur-[60px] opacity-30"></div>
+            
+            <div class="text-center mb-8 relative z-10">
+                <div class="bg-gradient-to-br from-brand-400 to-brand-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white text-3xl shadow-lg shadow-brand-500/30 transform rotate-3">
+                    <i class="fa-solid fa-shield-halved -rotate-3"></i>
                 </div>
-                <h3 class="text-2xl font-bold">MASUK</h3>
-                <p class="text-gray-500 text-sm mt-1">Hanya Farid Yang Bisa Masuk Di sistem</p>
+                <h3 class="text-3xl font-extrabold text-white tracking-tight">Otentikasi</h3>
+                <p class="text-slate-300 text-sm mt-2 font-medium">Hanya Farid Aris yang memiliki akses</p>
             </div>
-            <form id="loginForm" class="space-y-4">
+            <form id="loginForm" class="space-y-5 relative z-10">
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Email</label>
-                    <input type="email" id="loginEmail" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="driver@email.com">
+                    <label class="block text-sm font-bold mb-2 text-slate-200">Email Akses</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                        <input type="email" id="loginEmail" required class="w-full bg-slate-800/50 border border-slate-600/50 text-white rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all placeholder-slate-500" placeholder="driver@email.com">
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Password</label>
+                    <label class="block text-sm font-bold mb-2 text-slate-200">Kata Sandi</label>
                     <div class="relative">
-                        <input type="password" id="loginPassword" required class="w-full border border-gray-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="••••••••">
-                        <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 px-4 text-gray-500">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="loginPassword" required class="w-full bg-slate-800/50 border border-slate-600/50 text-white rounded-xl pl-11 pr-12 py-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all placeholder-slate-500" placeholder="••••••••">
+                        <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 px-4 text-slate-400 hover:text-white transition-colors">
                             <i id="eyeIcon" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl">
-                    <i class="fa-solid fa-right-to-bracket"></i> Masuk Aplikasi
+                <button type="submit" class="w-full bg-gradient-to-r from-brand-500 to-emerald-600 hover:from-brand-400 hover:to-emerald-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-brand-500/25 transition-all transform hover:scale-[1.02] mt-2">
+                    <i class="fa-solid fa-right-to-bracket mr-2"></i> Buka Sistem
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- ISI UTAMA -->
     <div id="appContent" class="hidden flex-col flex-grow">
-        <header class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
-            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-                <h1 class="text-lg md:text-2xl font-bold truncate">
-                    <i class="fa-solid fa-address-book mr-2"></i>DATA COSTUMER
-                </h1>
-                <button onclick="logoutFirebase()" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md font-semibold">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar
+        
+        <header class="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm sticky top-0 z-50 transition-colors duration-300">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center relative">
+                <div class="flex items-center gap-3">
+                    <div class="bg-brand-500 text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-md shadow-brand-500/20">
+                        <i class="fa-solid fa-address-book"></i>
+                    </div>
+                    <h1 class="text-xl md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 dark:from-white dark:to-slate-300 truncate tracking-tight">
+                        DATA CUSTOMER
+                    </h1>
+                </div>
+                
+                <button onclick="toggleMenu()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors focus:outline-none">
+                    <i class="fa-solid fa-bars text-xl"></i>
                 </button>
+
+                <div id="dropdownMenu" class="absolute right-4 top-16 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 w-48 hidden flex-col overflow-hidden transition-all duration-300 transform origin-top-right z-50">
+                    <div class="px-4 py-3 border-b border-gray-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pengaturan</p>
+                    </div>
+                    <button onclick="toggleDarkMode()" class="flex items-center px-4 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 w-full text-left transition-colors">
+                        <i id="themeIcon" class="fa-solid fa-moon mr-3 w-5 text-center text-indigo-500"></i> <span id="themeText">Mode Gelap</span>
+                    </button>
+                    <div class="border-t border-gray-100 dark:border-slate-700"></div>
+                    <button onclick="logoutFirebase()" class="flex items-center px-4 py-3.5 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-slate-700/50 w-full text-left transition-colors">
+                        <i class="fa-solid fa-arrow-right-from-bracket mr-3 w-5 text-center"></i> Keluar Sistem
+                    </button>
+                </div>
             </div>
         </header>
 
-        <!-- BANNER SLIDE -->
-        <div class="relative w-full h-32 md:h-48 bg-gray-200 overflow-hidden shadow-inner">
-            <div class="slide active bg-gradient-to-r from-green-600 to-green-400 flex items-center justify-center text-white text-center px-4">
-                <div><h2 class="text-xl md:text-3xl font-bold mb-1"><i class="fa-solid fa-car-side mr-2"></i>Layanan Bintang 5</h2></div>
+        <div class="relative w-full h-36 md:h-48 bg-slate-900 overflow-hidden">
+            <div class="slide active bg-gradient-to-r from-emerald-600 to-teal-500 flex items-center justify-center text-white text-center px-4">
+                <div class="absolute inset-0 bg-black/10"></div>
+                <div class="relative z-10"><h2 class="text-2xl md:text-4xl font-extrabold mb-1 tracking-tight"><i class="fa-solid fa-car-side mr-3"></i>Layanan Bintang 5</h2><p class="text-emerald-100 font-medium">Utamakan kepuasan pelanggan</p></div>
             </div>
-            <div class="slide bg-gradient-to-r from-yellow-500 to-yellow-300 flex items-center justify-center text-slate-900 text-center px-4">
-                <div><h2 class="text-xl md:text-3xl font-bold mb-1"><i class="fa-solid fa-motorcycle mr-2"></i>Tetap Semangat</h2></div>
+            <div class="slide bg-gradient-to-r from-amber-500 to-orange-400 flex items-center justify-center text-white text-center px-4">
+                <div class="absolute inset-0 bg-black/10"></div>
+                <div class="relative z-10"><h2 class="text-2xl md:text-4xl font-extrabold mb-1 tracking-tight"><i class="fa-solid fa-motorcycle mr-3"></i>Tetap Semangat</h2><p class="text-orange-100 font-medium">Hati-hati di jalan, keluarga menanti</p></div>
             </div>
-            <div class="slide bg-gradient-to-r from-slate-700 to-slate-500 flex items-center justify-center text-white text-center px-4">
-                <div><h2 class="text-xl md:text-3xl font-bold mb-1"><i class="fa-solid fa-user-check mr-2"></i>Pelanggan Offline</h2></div>
-            </div>
-            <div class="slide bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center text-white text-center px-4">
-                <div><h2 class="text-xl md:text-3xl font-bold mb-1"><i class="fa-solid fa-database mr-2"></i>Database Aman</h2></div>
+            <div class="slide bg-gradient-to-r from-slate-700 to-slate-800 flex items-center justify-center text-white text-center px-4">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+                <div class="relative z-10"><h2 class="text-2xl md:text-4xl font-extrabold mb-1 tracking-tight"><i class="fa-solid fa-user-check mr-3"></i>Pelanggan Offline</h2><p class="text-slate-300 font-medium">Data aman tersimpan rapi</p></div>
             </div>
         </div>
 
-        <div class="bg-slate-900 text-green-400 py-2 border-b-4 border-green-500 text-sm font-semibold">
+        <div class="bg-slate-900 dark:bg-black text-white py-2.5 border-b border-slate-800 text-sm font-bold tracking-wide shadow-inner">
             <div class="marquee-container">
-                <div class="marquee-content">
-                    <i class="fa-solid fa-bell mr-2"></i> Selamat Datang! Pastikan GPS selalu aktif . Semoga rezeki hari ini lancar! Aaminn <i class="fa-solid fa-bolt ml-2 text-yellow-400"></i>
+                <div class="marquee-content flex items-center">
+                    <i class="fa-solid fa-bell mr-2 text-yellow-400"></i> Selamat Datang! Pastikan GPS dan kuota selalu aktif agar notif orderan terus masuk dengan lancar. Semoga rezeki hari ini melimpah! Aaminn <i class="fa-solid fa-bolt ml-2 text-yellow-400"></i>
                 </div>
             </div>
         </div>
 
-        <main class="container mx-auto px-4 py-6 max-w-7xl flex-grow">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main class="container mx-auto px-4 py-8 max-w-7xl flex-grow">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 
-                <!-- FORM TAMBAH DATA -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl shadow-lg p-5 border-t-4 border-slate-800">
-                        <h2 class="text-lg font-bold mb-4 border-b pb-2 flex items-center">
-                            <i class="fa-solid fa-user-plus mr-2 text-slate-600"></i>Tambah Data
+                <div class="lg:col-span-4">
+                    <div class="bg-white dark:bg-slate-800 rounded-[1.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none p-6 border border-gray-100 dark:border-slate-700 transition-colors duration-300">
+                        <h2 class="text-xl font-extrabold mb-6 flex items-center text-slate-800 dark:text-white">
+                            <span class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 w-8 h-8 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </span>
+                            Input Data Baru
                         </h2>
-                        <form id="customerForm" class="space-y-4">
+                        <form id="customerForm" class="space-y-5">
                             <div>
-                                <label class="block text-sm font-semibold mb-1">Nama Lengkap</label>
-                                <input type="text" id="nama" required class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Masukkan nama...">
+                                <label class="block text-sm font-bold mb-1.5 text-slate-700 dark:text-slate-300">Nama Lengkap</label>
+                                <input type="text" id="nama" required class="w-full bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" placeholder="Masukkan nama...">
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold mb-1">No. Handphone <span class="text-gray-400 font-normal">(Opsional)</span></label>
-                                <input type="tel" id="nohp" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="08xx-xxxx-xxxx">
+                                <label class="block text-sm font-bold mb-1.5 text-slate-700 dark:text-slate-300">No. Handphone <span class="text-slate-400 font-medium text-xs">(Opsional)</span></label>
+                                <input type="tel" id="nohp" class="w-full bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" placeholder="08xx-xxxx-xxxx">
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold mb-1">Layanan</label>
-                                <select id="layanan" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
-                                    <option value="Grab">Grab</option>
-                                    <option value="Maxim">Maxim</option>
-                                    <option value="Offline">Offline</option>
-                                </select>
+                                <label class="block text-sm font-bold mb-1.5 text-slate-700 dark:text-slate-300">Layanan</label>
+                                <div class="relative">
+                                    <select id="layanan" class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all font-semibold">
+                                        <option value="Grab">Grab</option>
+                                        <option value="Maxim">Maxim</option>
+                                        <option value="Offline">Offline</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </div>
+                                </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold mb-1">Lokasi Penjemputan</label>
-                                <button type="button" onclick="getLocation()" class="mb-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 px-3 py-2 rounded-xl text-sm font-bold w-full">
-                                    <i class="fa-solid fa-location-crosshairs"></i> Deteksi Titik GPS
+                                <label class="block text-sm font-bold mb-1.5 text-slate-700 dark:text-slate-300">Lokasi Penjemputan</label>
+                                <button type="button" onclick="getLocation()" class="mb-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200 dark:border-blue-800/50 px-4 py-2.5 rounded-xl text-sm font-bold w-full transition-colors flex items-center justify-center">
+                                    <i class="fa-solid fa-location-crosshairs mr-2"></i> Deteksi Titik GPS Otomatis
                                 </button>
-                                <textarea id="lokasi" required rows="2" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Contoh: Jl. Pemuda (Pagar Hitam)"></textarea>
+                                <textarea id="lokasi" required rows="2" class="w-full bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all resize-none" placeholder="Contoh: Jl. Pemuda (Pagar Hitam)"></textarea>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold mb-1">Foto <span class="text-gray-400 font-normal">(Opsional)</span></label>
-                                <div class="grid grid-cols-2 gap-2 mb-2">
-                                    <button type="button" onclick="bukaGaleri()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-sm font-bold">
-                                        <i class="fa-solid fa-image"></i> Galeri
+                                <label class="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Dokumentasi <span class="text-slate-400 font-medium text-xs">(Opsional)</span></label>
+                                <div class="grid grid-cols-2 gap-3 mb-3">
+                                    <button type="button" onclick="bukaGaleri()" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm">
+                                        <i class="fa-regular fa-image mr-1"></i> Galeri
                                     </button>
-                                    <button type="button" onclick="bukaKamera()" class="bg-green-50 hover:bg-green-100 text-green-700 py-2 rounded-xl text-sm font-bold">
-                                        <i class="fa-solid fa-camera"></i> Kamera
+                                    <button type="button" onclick="bukaKamera()" class="bg-brand-50 dark:bg-brand-900/20 hover:bg-brand-100 dark:hover:bg-brand-900/40 text-brand-700 dark:text-brand-400 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm">
+                                        <i class="fa-solid fa-camera mr-1"></i> Kamera
                                     </button>
                                 </div>
                                 <input type="file" id="foto" accept="image/*" class="hidden">
-                                <img id="previewFoto" class="mt-3 hidden w-full h-40 object-cover rounded-xl border-2 border-dashed border-gray-300">
+                                <img id="previewFoto" class="mt-3 hidden w-full h-48 object-cover rounded-2xl border-2 border-dashed border-gray-300 dark:border-slate-600 shadow-sm">
                             </div>
-                            <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl text-lg">
-                                <i class="fa-solid fa-floppy-disk"></i> Simpan Data
+                            <button type="submit" class="w-full bg-slate-800 dark:bg-brand-600 hover:bg-slate-900 dark:hover:bg-brand-500 text-white font-extrabold py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 mt-2">
+                                <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Data Customer
                             </button>
                         </form>
                     </div>
                 </div>
 
-                <!-- DAFTAR DATA CUSTOMER - SUDAH ADA TOMBOL MAPS -->
-                <div class="lg:col-span-2 flex flex-col">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
-                        <div class="flex items-center gap-2">
-                            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-users-rectangle mr-2"></i>Daftar Customer</h2>
-                            <span id="totalData" class="bg-slate-800 text-white px-3 py-1 rounded-full text-sm font-bold">0 Data Terdeteksi</span>
+                <div class="lg:col-span-8 flex flex-col">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 w-10 h-10 rounded-xl flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-users-rectangle"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-extrabold text-slate-800 dark:text-white leading-tight">Daftar Customer</h2>
+                                <p id="totalData" class="text-sm font-semibold text-brand-600 dark:text-brand-400">0 Data Terdeteksi</p>
+                            </div>
                         </div>
-                        <button onclick="muatUlangData()" class="w-full md:w-auto bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 px-4 py-2 rounded-xl text-sm font-bold">
-                            <i class="fa-solid fa-arrows-rotate"></i> Muat Ulang
+                        <button onclick="muatUlangData()" class="w-full sm:w-auto bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 border border-gray-200 dark:border-slate-700 px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:shadow transition-all">
+                            <i class="fa-solid fa-arrows-rotate mr-1"></i> Muat Ulang
                         </button>
                     </div>
 
-                    <div class="mb-4">
-                        <div class="relative shadow-sm rounded-xl">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-4">
-                                <i class="fa-solid fa-search text-gray-400"></i>
+                    <div class="mb-6">
+                        <div class="relative shadow-sm rounded-xl group">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 transition-colors group-focus-within:text-brand-500 text-slate-400">
+                                <i class="fa-solid fa-search"></i>
                             </span>
-                            <input type="text" id="searchInput" class="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Cari nama, no hp, lokasi...">
+                            <input type="text" id="searchInput" class="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-xl pl-12 pr-4 py-4 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all font-medium shadow-sm" placeholder="Cari nama pelanggan, nomor HP, atau lokasi...">
                         </div>
                     </div>
                     
-                    <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 flex-grow content-start bg-white rounded-xl p-3 min-h-[300px]">
-                        <div class="col-span-full text-center py-10 text-gray-500">Sedang memuat data...</div>
+                    <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 gap-5 flex-grow content-start min-h-[400px]">
+                        <div class="col-span-full flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-[1.5rem] border border-gray-100 dark:border-slate-700 shadow-sm">
+                            <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-brand-500"></i>
+                            <p class="font-bold">Menyinkronkan data dari cloud...</p>
+                        </div>
                     </div>
 
-                    <div id="loadMoreContainer" class="mt-6 text-center hidden">
-                        <button onclick="loadMore()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full">
+                    <div id="loadMoreContainer" class="mt-8 text-center hidden">
+                        <button onclick="loadMore()" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-3 px-8 rounded-full shadow-sm transition-colors">
                             <i class="fa-solid fa-chevron-down mr-2"></i>Tampilkan Lebih Banyak
                         </button>
                     </div>
@@ -209,44 +298,107 @@
             </div>
         </main>
 
-        <footer class="bg-slate-900 text-gray-400 py-6 mt-8 border-t border-slate-700">
+        <footer class="bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 py-8 mt-auto transition-colors duration-300">
             <div class="container mx-auto px-4 text-center">
-                <h3 class="text-white font-bold text-lg mb-2"><i class="fa-solid fa-shield-halved mr-2"></i>Sistem Manajemen Customer</h3>
-                <p class="text-sm mb-4">Website pengelolaan data dan tersimpan di cloud.</p>
-                <div class="flex justify-center gap-4 mb-4">
-                    <span class="text-green-500"><i class="fa-solid fa-car-side text-2xl"></i></span>
-                    <span class="text-yellow-500"><i class="fa-solid fa-motorcycle text-2xl"></i></span>
-                    <span class="text-slate-400"><i class="fa-solid fa-user-check text-2xl"></i></span>
+                <div class="inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 w-12 h-12 rounded-full mb-4 text-brand-500 text-xl">
+                    <i class="fa-solid fa-database"></i>
                 </div>
-                <p class="text-xs border-t border-slate-700 pt-4">© 2026 Dirancang dan dikembangkan oleh <b>Andi Farid Aris</b></p>
+                <h3 class="text-slate-800 dark:text-white font-extrabold text-lg mb-1 tracking-tight">Sistem Manajemen Customer</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 font-medium">Data aman tersinkronisasi di Cloud Server</p>
+                
+                <div class="flex justify-center items-center gap-6 mb-6">
+                    <div class="text-brand-500 dark:text-brand-400 transform hover:scale-110 transition-transform"><i class="fa-solid fa-car-side text-2xl"></i></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-slate-700"></div>
+                    <div class="text-yellow-500 transform hover:scale-110 transition-transform"><i class="fa-solid fa-motorcycle text-2xl"></i></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-slate-700"></div>
+                    <div class="text-slate-600 dark:text-slate-400 transform hover:scale-110 transition-transform"><i class="fa-solid fa-user-check text-2xl"></i></div>
+                </div>
+                
+                <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">© 2026 Dirancang & dikembangkan oleh <br><span class="text-slate-700 dark:text-slate-300 font-extrabold text-sm mt-1 inline-block">Farid Aris</span></p>
             </div>
         </footer>
     </div>
 
-    <!-- MODAL WA -->
-    <div id="waModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+    <div id="waModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-all duration-300 opacity-0">
+        <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300 border border-gray-100 dark:border-slate-700" id="waModalContent">
             <div class="relative">
-                <img id="modalFoto" src="" class="w-full h-64 object-cover" alt="Foto">
-                <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/50 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
+                <img id="modalFoto" src="" class="w-full h-72 object-cover" alt="Foto">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/50 hover:bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center backdrop-blur-md transition-colors shadow-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
+                <h3 id="modalNama" class="absolute bottom-4 left-5 text-2xl font-extrabold text-white tracking-tight drop-shadow-md"></h3>
             </div>
-            <div class="p-5 text-center">
-                <h3 id="modalNama" class="text-xl font-bold mb-2"></h3>
-                <p class="text-gray-600 mb-4"><i class="fa-solid fa-phone mr-1"></i> <span id="modalNoHP"></span></p>
-                <a id="modalBtnWA" href="#" target="_blank" class="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl mb-2">
-                    <i class="fa-brands fa-whatsapp mr-2"></i> Chat WhatsApp
-                </a>
-                <a id="modalBtnMaps" href="#" target="_blank" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl">
-                    <i class="fa-solid fa-map-location-dot mr-2"></i> Buka Google Maps
-                </a>
+            <div class="p-6 text-center">
+                <div class="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 mb-5 border border-gray-100 dark:border-slate-700">
+                    <p class="text-slate-600 dark:text-slate-300 font-bold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-phone text-brand-500"></i> <span id="modalNoHP" class="tracking-wide"></span>
+                    </p>
+                </div>
+                
+                <div class="space-y-3">
+                    <a id="modalBtnWA" href="#" target="_blank" class="flex items-center justify-center w-full bg-[#25D366] hover:bg-[#1EBE57] text-white font-extrabold py-3.5 rounded-xl transition-colors shadow-lg shadow-[#25D366]/30">
+                        <i class="fa-brands fa-whatsapp text-xl mr-2"></i> Chat WhatsApp
+                    </a>
+                    <a id="modalBtnMaps" href="#" target="_blank" class="flex items-center justify-center w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-600/30">
+                        <i class="fa-solid fa-map-location-dot text-lg mr-2"></i> Buka Google Maps
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // KONFIGURASI FIREBASE TETAP SAMA
+        // SCRIPT MENU GARIS TIGA & MODE GELAP
+        function toggleMenu() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+            
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            if (html.classList.contains('dark')) {
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+                themeIcon.classList.replace('text-indigo-500', 'text-yellow-400');
+                themeText.textContent = 'Mode Terang';
+            } else {
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+                themeIcon.classList.replace('text-yellow-400', 'text-indigo-500');
+                themeText.textContent = 'Mode Gelap';
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('dropdownMenu');
+            const button = event.target.closest('button[onclick="toggleMenu()"]');
+            if (!button && !menu.contains(event.target)) {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+            }
+        });
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+                themeIcon.classList.replace('text-yellow-400', 'text-indigo-500');
+                themeText.textContent = 'Mode Gelap';
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+                themeIcon.classList.replace('text-indigo-500', 'text-yellow-400');
+                themeText.textContent = 'Mode Terang';
+            }
+        }
+
+        // KONFIGURASI FIREBASE
         const firebaseConfig = {
           apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
           authDomain: "datacsgm.firebaseapp.com",
@@ -261,11 +413,10 @@
         const db = firebase.database();
 
         let fotoBase64 = "";
-        let itemsToShow = 100;
+        let itemsToShow = 5; // DIBATASI 5 TAMPILAN AWAL
         let semuaData = [];
         let asliSemuaData = [];
 
-        // FUNGSI TAMPIL / SEMBUNYI LOADING
         function showLoading() { document.getElementById('loadingOverlay').classList.remove('hidden'); document.getElementById('loadingOverlay').classList.add('flex'); }
         function hideLoading() { document.getElementById('loadingOverlay').classList.add('hidden'); document.getElementById('loadingOverlay').classList.remove('flex'); }
 
@@ -273,7 +424,7 @@
             const inp = document.getElementById('loginPassword');
             const ico = document.getElementById('eyeIcon');
             inp.type = inp.type === 'password' ? 'text' : 'password';
-            ico.className = inp.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+            ico.className = inp.type === 'password' ? 'fa-solid fa-eye text-brand-400' : 'fa-solid fa-eye text-slate-400';
         }
 
         auth.onAuthStateChanged(user => {
@@ -300,20 +451,21 @@
             const pass = document.getElementById('loginPassword').value;
             auth.signInWithEmailAndPassword(email, pass)
                 .then(() => hideLoading())
-                .catch(err => { hideLoading(); Swal.fire({icon:'error',title:'Gagal',text:err.message,confirmButtonColor:'#1e293b'}); });
+                .catch(err => { hideLoading(); Swal.fire({icon:'error',title:'Akses Ditolak',text:'Kredensial tidak valid!',confirmButtonColor:'#10b981'}); });
         });
 
         function logoutFirebase() {
-            Swal.fire({title:'Keluar?',text:'Yakin mau keluar?',icon:'warning',showCancelButton:true,confirmButtonColor:'#1e293b',cancelButtonColor:'#ef4444'})
+            document.getElementById('dropdownMenu').classList.add('hidden');
+            Swal.fire({title:'Keluar Sistem?',text:'Sesi Anda akan diakhiri.',icon:'warning',showCancelButton:true,confirmButtonColor:'#1e293b',cancelButtonColor:'#ef4444', confirmButtonText: 'Ya, Keluar'})
             .then(res => { if(res.isConfirmed){ showLoading(); auth.signOut().then(hideLoading); } });
         }
 
-        // ✅ FUNGSI UTAMA
+        // FUNGSI UTAMA
         function ambilDataLangsung() {
             const wadah = document.getElementById('dataContainer');
             const infoJml = document.getElementById('totalData');
 
-            wadah.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengambil data dari server...</div>`;
+            wadah.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-[1.5rem] border border-gray-100 dark:border-slate-700 shadow-sm"><i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-brand-500"></i><p class="font-bold">Menarik data dari cloud...</p></div>`;
 
             db.ref('customers').once('value')
             .then(snapshot => {
@@ -334,72 +486,94 @@
 
                 semuaData = [...asliSemuaData];
                 infoJml.innerText = `${semuaData.length} Data Terdeteksi`;
+                itemsToShow = 5; // Reset ke 5 tiap kali muat ulang data
                 tampilkanKartu();
             })
             .catch(err => {
-                wadah.innerHTML = `<div class="col-span-full text-center py-10 text-red-500"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Gagal: ${err.message}</div>`;
+                wadah.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-16 text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-[1.5rem] border border-red-100 dark:border-red-900/50"><i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i><p class="font-bold">Gagal memuat: ${err.message}</p></div>`;
             });
         }
 
-        // ✅ TAMPILKAN KARTU + TOMBOL GOOGLE MAPS
+        // TAMPILKAN KARTU LIMIT 5 DAN LINK MAPS BARU
         function tampilkanKartu() {
             const wadah = document.getElementById('dataContainer');
             const btnLebih = document.getElementById('loadMoreContainer');
 
             if (semuaData.length === 0) {
-                wadah.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 bg-gray-50 rounded-xl border">
-                    <i class="fa-solid fa-folder-open text-4xl mb-2 text-gray-300"></i>
-                    <p class="font-medium">Belum ada data pelanggan tersimpan</p>
+                wadah.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-[1.5rem] border border-gray-100 dark:border-slate-700 shadow-sm">
+                    <div class="bg-slate-100 dark:bg-slate-700 w-20 h-20 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-folder-open text-4xl text-slate-400 dark:text-slate-500"></i>
+                    </div>
+                    <p class="font-bold text-lg text-slate-700 dark:text-slate-300">Belum ada data pelanggan</p>
+                    <p class="text-sm mt-1">Mulai tambahkan data untuk memudahkan kerja</p>
                 </div>`;
                 btnLebih.classList.add('hidden');
                 return;
             }
 
             let html = '';
-            semuaData.forEach(cust => {
-                const warnaBadge = cust.layanan === 'Grab' ? 'bg-green-500 text-white' : cust.layanan === 'Maxim' ? 'bg-yellow-400 text-black' : 'bg-slate-600 text-white';
+            // Batasi tampilan menggunakan array slice berdasarkan variabel itemsToShow
+            const dataTampil = semuaData.slice(0, itemsToShow);
+
+            dataTampil.forEach(cust => {
+                const warnaBadge = cust.layanan === 'Grab' ? 'bg-gradient-to-r from-brand-500 to-emerald-500 text-white shadow-brand-500/30' : cust.layanan === 'Maxim' ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-amber-950 shadow-amber-500/30' : 'bg-gradient-to-r from-slate-600 to-slate-700 text-white shadow-slate-500/30';
                 const ikon = cust.layanan === 'Grab' ? 'fa-car' : cust.layanan === 'Maxim' ? 'fa-motorcycle' : 'fa-user-check';
-                // ✅ Buat tautan Google Maps otomatis dari lokasi
+                // PERBAIKAN FORMAT LINK GOOGLE MAPS
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cust.lokasi)}`;
 
                 html += `
-                <div class="bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 p-4 md:p-5 card-hover">
-                    <div class="flex items-start gap-3">
-                        <img src="${cust.foto}" alt="Foto" class="w-14 h-14 md:w-16 md:h-16 rounded-lg object-cover border">
+                <div class="bg-white dark:bg-slate-800 rounded-[1.5rem] shadow-sm hover:shadow-xl dark:shadow-none border border-gray-100 dark:border-slate-700 p-5 card-hover group relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-24 h-24 bg-brand-500/10 rounded-full blur-2xl group-hover:bg-brand-500/20 transition-all"></div>
+                    
+                    <div class="flex items-start gap-4 relative z-10">
+                        <img src="${cust.foto}" alt="Foto" class="w-16 h-16 rounded-2xl object-cover border border-gray-200 dark:border-slate-600 shadow-sm">
                         <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-start gap-1 mb-1">
-                                <h3 class="font-bold text-lg truncate">${cust.nama}</h3>
-                                <span class="${warnaBadge} text-[10px] md:text-xs font-bold px-2 py-1 rounded">
+                            <div class="flex justify-between items-start gap-2 mb-1.5">
+                                <h3 class="font-extrabold text-lg truncate text-slate-800 dark:text-white">${cust.nama}</h3>
+                                <span class="${warnaBadge} text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm whitespace-nowrap">
                                     <i class="fa-solid ${ikon} mr-1"></i>${cust.layanan}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-600 mb-1"><i class="fa-solid fa-phone mr-1 text-gray-400"></i> ${cust.nohp || 'Tidak ada nomor'}</p>
-                            <p class="text-sm text-gray-600"><i class="fa-solid fa-map mr-1 text-gray-400"></i> ${cust.lokasi.substring(0, 45)}...</p>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-1 font-medium truncate"><i class="fa-solid fa-phone mr-1.5 text-slate-400"></i> ${cust.nohp || 'Tidak ada nomor'}</p>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 font-medium truncate"><i class="fa-solid fa-map-location-dot mr-1.5 text-brand-500"></i> ${cust.lokasi}</p>
                         </div>
                     </div>
-                    <div class="mt-3 grid grid-cols-3 gap-2">
-                        <button onclick="bukaDetail('${cust.id}')" class="bg-blue-50 text-blue-600 hover:bg-blue-100 py-2 rounded-lg text-sm font-semibold">
+                    <div class="mt-5 grid grid-cols-3 gap-2.5 relative z-10">
+                        <button onclick="bukaDetail('${cust.id}')" class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all border border-transparent hover:border-blue-600">
                             <i class="fa-solid fa-eye mr-1"></i> Lihat
                         </button>
-                        <!-- ✅ TOMBOL BARU: GOOGLE MAPS -->
-                        <a href="${mapsUrl}" target="_blank" class="text-center bg-green-50 text-green-700 hover:bg-green-100 py-2 rounded-lg text-sm font-semibold">
-                            <i class="fa-solid fa-map-location-dot mr-1"></i> Maps
+                        <a href="${mapsUrl}" target="_blank" class="text-center bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 hover:bg-brand-600 hover:text-white dark:hover:bg-brand-600 dark:hover:text-white py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all border border-transparent hover:border-brand-600">
+                            <i class="fa-solid fa-location-arrow mr-1"></i> Maps
                         </a>
-                        <button onclick="hapusData('${cust.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 py-2 rounded-lg text-sm font-semibold">
-                            <i class="fa-solid fa-trash mr-1"></i> Hapus
+                        <button onclick="hapusData('${cust.id}')" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all border border-transparent hover:border-red-600">
+                            <i class="fa-solid fa-trash-can mr-1"></i> Hapus
                         </button>
                     </div>
                 </div>`;
             });
 
             wadah.innerHTML = html;
-            btnLebih.classList.add('hidden');
+
+            // Kontrol kemunculan tombol Load More
+            if (semuaData.length > itemsToShow) {
+                btnLebih.classList.remove('hidden');
+            } else {
+                btnLebih.classList.add('hidden');
+            }
+        }
+
+        // FUNGSI LOAD MORE
+        function loadMore() {
+            itemsToShow += 5;
+            tampilkanKartu();
         }
 
         // CARI DATA
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const kata = e.target.value.trim().toLowerCase();
-            if(!kata) { semuaData = [...asliSemuaData]; }
+            if(!kata) { 
+                semuaData = [...asliSemuaData]; 
+            }
             else {
                 semuaData = asliSemuaData.filter(x => 
                     x.nama.toLowerCase().includes(kata) ||
@@ -409,19 +583,19 @@
                 );
             }
             document.getElementById('totalData').innerText = `${semuaData.length} Data Terdeteksi`;
+            itemsToShow = 5; // Reset ke 5 ketika melakukan pencarian baru
             tampilkanKartu();
         });
 
         function muatUlangData() { ambilDataLangsung(); }
 
-        // SISA FUNGSI PENDUKUNG TETAP SAMA
         let slideIndex = 0;
         const slides = document.querySelectorAll('.slide');
         function showSlides() {
             slides.forEach(s=>s.classList.remove('active'));
             slideIndex++; if(slideIndex>slides.length) slideIndex=1;
             slides[slideIndex-1].classList.add('active');
-            setTimeout(showSlides,4000);
+            setTimeout(showSlides,5000);
         }
         showSlides();
 
@@ -442,14 +616,19 @@
             document.getElementById('previewFoto').src=fotoBase64; document.getElementById('previewFoto').classList.remove('hidden'); hideLoading();
         });
 
+        // PERBAIKAN AKURASI GPS (Lebih Presisi 2 Meter)
         function getLocation(){
-            if(!navigator.geolocation){ Swal.fire({icon:'info',text:'GPS tidak didukung'}); return; }
-            const lok=document.getElementById('lokasi'); lok.value="Mencari lokasi...";
+            if(!navigator.geolocation){ Swal.fire({icon:'info',text:'GPS tidak didukung',confirmButtonColor:'#10b981'}); return; }
+            const lok=document.getElementById('lokasi'); lok.value="Menyinkronkan koordinat...";
+            
+            // Ditambahkan opsi 'enableHighAccuracy' untuk memaksa deteksi lokasi satelit yang sesungguhnya
+            const opsiGPS = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
+            
             navigator.geolocation.getCurrentPosition(pos=>{
                 lok.value = `${pos.coords.latitude}, ${pos.coords.longitude}`;
                 fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=id`)
                 .then(r=>r.json()).then(d=>{ lok.value += "\n"+(d.display_name||''); }).catch(()=>{});
-            },err=>{ lok.value="Gagal dapat lokasi"; });
+            },err=>{ lok.value="Gagal mendapatkan lokasi presisi, pastikan GPS Anda aktif dan berada di area terbuka"; }, opsiGPS);
         }
 
         // FORM SIMPAN DATA
@@ -466,26 +645,46 @@
             db.ref('customers/'+kunci).set(dataBaru)
             .then(()=>{
                 this.reset(); fotoBase64=""; document.getElementById('previewFoto').classList.add('hidden'); hideLoading();
-                Swal.fire({icon:'success',title:'Disimpan',text:'Data masuk ke cloud',confirmButtonColor:'#1e293b'});
+                Swal.fire({icon:'success',title:'Berhasil!',text:'Data tersimpan di cloud',confirmButtonColor:'#10b981'});
                 ambilDataLangsung();
             })
-            .catch(err=>{ hideLoading(); Swal.fire({icon:'error',title:'Gagal',text:err.message,confirmButtonColor:'#1e293b'}); });
+            .catch(err=>{ hideLoading(); Swal.fire({icon:'error',title:'Gagal Menyimpan',text:err.message,confirmButtonColor:'#ef4444'}); });
         });
 
-        // ✅ MODAL JUGA DITAMBAH TOMBOL MAPS
         function bukaDetail(id){
             const d = asliSemuaData.find(x=>x.id===id); if(!d) return;
             document.getElementById('modalFoto').src=d.foto; document.getElementById('modalNama').textContent=d.nama;
-            document.getElementById('modalNoHP').textContent=d.nohp||'Tidak ada';
+            document.getElementById('modalNoHP').textContent=d.nohp||'Tidak ada nomor handphone';
             document.getElementById('modalBtnWA').href = `https://wa.me/62${(d.nohp||'').replace(/^0/,'')}`;
+            
+            // PERBAIKAN FORMAT LINK GOOGLE MAPS PADA MODAL
             document.getElementById('modalBtnMaps').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.lokasi)}`;
-            document.getElementById('waModal').classList.remove('hidden');
+            
+            const modal = document.getElementById('waModal');
+            const modalContent = document.getElementById('waModalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
         }
-        function closeModal(){ document.getElementById('waModal').classList.add('hidden'); }
+        
+        function closeModal(){ 
+            const modal = document.getElementById('waModal');
+            const modalContent = document.getElementById('waModalContent');
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+        
         document.getElementById('waModal').addEventListener('click',e=>{ if(e.target.id==='waModal') closeModal(); });
 
         function hapusData(id){
-            Swal.fire({title:'Hapus data ini?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444',cancelButtonColor:'#64748b'})
+            Swal.fire({title:'Hapus Data?',text:'Data pelanggan tidak dapat dikembalikan',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444',cancelButtonColor:'#64748b',confirmButtonText:'Ya, Hapus'})
             .then(r=>{ if(r.isConfirmed){ showLoading(); db.ref('customers/'+id).remove().then(()=>{ hideLoading(); ambilDataLangsung(); }); } });
         }
 
