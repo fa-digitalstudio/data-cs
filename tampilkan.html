@@ -357,7 +357,8 @@
     <script>
 
 const _0=["QUl6YVN5QkRwMHVGS0wwRkZ2W","mhRMEtzdVdCdFZNMDM0cmR0TUU="],_1=["ZGF0YWNzZ20uZmlyZWJhc2UuY29t"],_2=["aHR0cHM6Ly9kYXRhY3NnbS1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVh","c3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw"],_3=["ZGF0YWNzZ20uZmlyZWJhc2VzdG9yYWdlLmFwcA=="],_4=["MzcwMjIwNzU2NTg2"],_5=["MTozNzAyMjA3NTY1ODY6d2ViOmYxMTgyNTZhZGI2","NTlhYWVlMjQxMw=="],_6=["ZGF0YWNzZ20uY3BnbG9yZ2R0Z20="];const firebaseConfig={apiKey:atob(_0[0]+_0[1]),authDomain:atob(_1[0]),databaseURL:atob(_2[0]+_2[1]),projectId:atob(_6[0]),storageBucket:atob(_3[0]),messagingSenderId:atob(_4[0]),appId:atob(_5[0]+_5[1])};
-        
+
+firebase.initializeApp(firebaseConfig);       
 const auth = firebase.auth();
 const database = firebase.database();
 
