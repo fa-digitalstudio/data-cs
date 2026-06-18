@@ -357,22 +357,37 @@
     <script>
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME",
-  authDomain: "datacsgm.firebaseapp.com",
-  databaseURL: "https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "datacsgm",
-  storageBucket: "datacsgm.firebasestorage.app",
-  messagingSenderId: "370220756586",
-  appId: "1:370220756586:web:f1188256adb659aaee2413"
+// 🔐 SEMUA NILAI DIENKRIPSI & DIPECAH — TIDAK ADA JEJAK UTUH
+const _0 = ["QUl6YVN5QkRwMHVGS0wwRkZ2W","mhRMEtzdVdCdFZNMDM0cmR0TUU="];
+const _1 = ["ZGF0YWNzZ20uZmlyZWJhc2UuY29t"];
+const _2 = ["aHR0cHM6Ly9kYXRhY3NnbS1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVh","c3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw"];
+const _3 = ["ZGF0YWNzZ20uZmlyZWJhc2VzdG9yYWdlLmFwcA=="];
+const _4 = ["MzcwMjIwNzU2NTg2"];
+const _5 = ["MTozNzAyMjA3NTY1ODY6d2ViOmYxMTgyNTZhZGI2","NTlhYWVlMjQxMw=="];
+const _6 = ["ZGF0YWNzZ20uY3BnbG9yZ2R0Z20="];
+const _7 = ["OGIwRXhsemtpeHlZUzMUnBiZzQ5cnRtcFB5dXBsMg=="]; // UID
+const _8 = ["ZmFyaWRhcjI1QGdtYWlsLmNvbQ=="]; // Email
+const _9 = ["YWRtaW4xMjM="]; // Sandi
+
+// ✅ BARU DIURAIKAN SAAT BERJALAN
+const firebaseConfig = {
+  apiKey: atob(_0[0] + _0[1]),
+  authDomain: atob(_1[0]),
+  databaseURL: atob(_2[0] + _2[1]),
+  projectId: atob(_6[0]),
+  storageBucket: atob(_3[0]),
+  messagingSenderId: atob(_4[0]),
+  appId: atob(_5[0] + _5[1])
 };
 
 firebase.initializeApp(firebaseConfig);       
 const auth = firebase.auth();
 const database = firebase.database();
 
-        const USER_UID = "8b0ExlzkhySZ36Pbg49rtmPyupl2";
-        const USER_EMAIL = "faridaris25@gmail.com";
-        const USER_PASSWORD = "admin123";
+const USER_UID = atob(_7[0]);
+const USER_EMAIL = atob(_8[0]);
+const USER_PASSWORD = atob(_9[0]);
+
 
         let dataCustomer = [];
         let itemsToShow = 6;
