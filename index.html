@@ -27,6 +27,18 @@
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Ctrl+Shift+J
             if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U
         };
+
+        // ANTI-DEBUG: Freeze Inspect Element jika dipaksa buka lewat menu
+        setInterval(function() {
+            debugger;
+        }, 50);
+
+        // Membersihkan console agar kode tidak bisa dibaca
+        setInterval(function() {
+            console.clear();
+            console.log("%cAKSES DITOLAK!", "color: red; font-size: 40px; font-weight: bold;");
+            console.log("Sistem Data Customer diamankan.");
+        }, 1000);
         
         // Inisialisasi Mode Gelap
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -45,6 +57,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512x512.png">
     
+    <!-- Konfigurasi Tailwind untuk Dark Mode -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -101,8 +114,10 @@
         <p class="text-brand-400 font-bold tracking-widest animate-pulse">SINKRONISASI...</p>
     </div>
 
+    <!-- LAYAR LOGIN -->
     <div id="loginScreen" class="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 z-[100] flex items-center justify-center p-4">
         <div class="bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-slate-700 rounded-[2rem] shadow-2xl w-full max-w-md p-8 relative overflow-hidden">
+            <!-- Dekorasi Lingkaran Blur -->
             <div class="absolute top-[-50px] right-[-50px] w-32 h-32 bg-brand-500 rounded-full blur-[60px] opacity-40"></div>
             <div class="absolute bottom-[-50px] left-[-50px] w-32 h-32 bg-blue-500 rounded-full blur-[60px] opacity-30"></div>
             
@@ -142,8 +157,10 @@
         </div>
     </div>
 
+    <!-- ISI UTAMA -->
     <div id="appContent" class="hidden flex-col flex-grow">
         
+        <!-- HEADER DENGAN MENU GARIS TIGA -->
         <header class="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm sticky top-0 z-50 transition-colors duration-300">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center relative">
                 <div class="flex items-center gap-3">
@@ -155,10 +172,12 @@
                     </h1>
                 </div>
                 
+                <!-- Tombol Menu Garis Tiga -->
                 <button onclick="toggleMenu()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors focus:outline-none">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
 
+                <!-- Dropdown Menu -->
                 <div id="dropdownMenu" class="absolute right-4 top-16 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 w-48 hidden flex-col overflow-hidden transition-all duration-300 transform origin-top-right z-50">
                     <div class="px-4 py-3 border-b border-gray-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
                         <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pengaturan</p>
@@ -174,6 +193,7 @@
             </div>
         </header>
 
+        <!-- BANNER SLIDE -->
         <div class="relative w-full h-36 md:h-48 bg-slate-900 overflow-hidden">
             <div class="slide active bg-gradient-to-r from-emerald-600 to-teal-500 flex items-center justify-center text-white text-center px-4">
                 <div class="absolute inset-0 bg-black/10"></div>
@@ -189,6 +209,7 @@
             </div>
         </div>
 
+        <!-- MARQUEE -->
         <div class="bg-slate-900 dark:bg-black text-white py-2.5 border-b border-slate-800 text-sm font-bold tracking-wide shadow-inner">
             <div class="marquee-container">
                 <div class="marquee-content flex items-center">
@@ -200,6 +221,7 @@
         <main class="container mx-auto px-4 py-8 max-w-7xl flex-grow">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 
+                <!-- FORM TAMBAH DATA -->
                 <div class="lg:col-span-4">
                     <div class="bg-white dark:bg-slate-800 rounded-[1.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none p-6 border border-gray-100 dark:border-slate-700 transition-colors duration-300">
                         <h2 class="text-xl font-extrabold mb-6 flex items-center text-slate-800 dark:text-white">
@@ -257,6 +279,7 @@
                     </div>
                 </div>
 
+                <!-- DAFTAR DATA CUSTOMER -->
                 <div class="lg:col-span-8 flex flex-col">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <div class="flex items-center gap-3">
@@ -282,6 +305,7 @@
                         </div>
                     </div>
                     
+                    <!-- Container Data -->
                     <div id="dataContainer" class="grid grid-cols-1 md:grid-cols-2 gap-5 flex-grow content-start min-h-[400px]">
                         <div class="col-span-full flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-[1.5rem] border border-gray-100 dark:border-slate-700 shadow-sm">
                             <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-brand-500"></i>
@@ -289,6 +313,7 @@
                         </div>
                     </div>
 
+                    <!-- Tombol Tampilkan Lebih Banyak -->
                     <div id="loadMoreContainer" class="mt-8 text-center hidden">
                         <button onclick="loadMore()" class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-3 px-8 rounded-full shadow-sm transition-colors">
                             <i class="fa-solid fa-chevron-down mr-2"></i>Tampilkan Lebih Banyak
@@ -319,6 +344,7 @@
         </footer>
     </div>
 
+    <!-- MODAL WA -->
     <div id="waModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-all duration-300 opacity-0">
         <div class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300 border border-gray-100 dark:border-slate-700" id="waModalContent">
             <div class="relative">
@@ -413,7 +439,7 @@
         const db = firebase.database();
 
         let fotoBase64 = "";
-        let itemsToShow = 5; // DIBATASI 5 TAMPILAN AWAL
+        let itemsToShow = 5; 
         let semuaData = [];
         let asliSemuaData = [];
 
@@ -486,7 +512,7 @@
 
                 semuaData = [...asliSemuaData];
                 infoJml.innerText = `${semuaData.length} Data Terdeteksi`;
-                itemsToShow = 5; // Reset ke 5 tiap kali muat ulang data
+                itemsToShow = 5; 
                 tampilkanKartu();
             })
             .catch(err => {
@@ -494,7 +520,7 @@
             });
         }
 
-        // TAMPILKAN KARTU LIMIT 5 DAN LINK MAPS BARU
+        // TAMPILKAN KARTU LIMIT 5
         function tampilkanKartu() {
             const wadah = document.getElementById('dataContainer');
             const btnLebih = document.getElementById('loadMoreContainer');
@@ -512,13 +538,11 @@
             }
 
             let html = '';
-            // Batasi tampilan menggunakan array slice berdasarkan variabel itemsToShow
             const dataTampil = semuaData.slice(0, itemsToShow);
 
             dataTampil.forEach(cust => {
                 const warnaBadge = cust.layanan === 'Grab' ? 'bg-gradient-to-r from-brand-500 to-emerald-500 text-white shadow-brand-500/30' : cust.layanan === 'Maxim' ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-amber-950 shadow-amber-500/30' : 'bg-gradient-to-r from-slate-600 to-slate-700 text-white shadow-slate-500/30';
                 const ikon = cust.layanan === 'Grab' ? 'fa-car' : cust.layanan === 'Maxim' ? 'fa-motorcycle' : 'fa-user-check';
-                // PERBAIKAN FORMAT LINK GOOGLE MAPS
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cust.lokasi)}`;
 
                 html += `
@@ -554,7 +578,6 @@
 
             wadah.innerHTML = html;
 
-            // Kontrol kemunculan tombol Load More
             if (semuaData.length > itemsToShow) {
                 btnLebih.classList.remove('hidden');
             } else {
@@ -562,7 +585,6 @@
             }
         }
 
-        // FUNGSI LOAD MORE
         function loadMore() {
             itemsToShow += 5;
             tampilkanKartu();
@@ -583,7 +605,7 @@
                 );
             }
             document.getElementById('totalData').innerText = `${semuaData.length} Data Terdeteksi`;
-            itemsToShow = 5; // Reset ke 5 ketika melakukan pencarian baru
+            itemsToShow = 5; 
             tampilkanKartu();
         });
 
@@ -616,12 +638,10 @@
             document.getElementById('previewFoto').src=fotoBase64; document.getElementById('previewFoto').classList.remove('hidden'); hideLoading();
         });
 
-        // PERBAIKAN AKURASI GPS (Lebih Presisi 2 Meter)
         function getLocation(){
             if(!navigator.geolocation){ Swal.fire({icon:'info',text:'GPS tidak didukung',confirmButtonColor:'#10b981'}); return; }
             const lok=document.getElementById('lokasi'); lok.value="Menyinkronkan koordinat...";
             
-            // Ditambahkan opsi 'enableHighAccuracy' untuk memaksa deteksi lokasi satelit yang sesungguhnya
             const opsiGPS = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
             
             navigator.geolocation.getCurrentPosition(pos=>{
@@ -657,7 +677,6 @@
             document.getElementById('modalNoHP').textContent=d.nohp||'Tidak ada nomor handphone';
             document.getElementById('modalBtnWA').href = `https://wa.me/62${(d.nohp||'').replace(/^0/,'')}`;
             
-            // PERBAIKAN FORMAT LINK GOOGLE MAPS PADA MODAL
             document.getElementById('modalBtnMaps').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.lokasi)}`;
             
             const modal = document.getElementById('waModal');
