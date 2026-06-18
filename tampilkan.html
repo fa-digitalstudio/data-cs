@@ -356,38 +356,7 @@
 
     <script>
 
-// 🔐 NILAI SUDAH DIUBAH FORMAT — TIDAK TERLIHAT DI INSPEKSI
-const _CFG = {
-  k: "QUl6YVN5QkRwMHVGS0wwRkZ2WmhRMEtzdVdCdFZNMDM0cmR0TUU=",
-  d: "ZGF0YWNzZ20uZmlyZWJhc2UuY29t",
-  u: "aHR0cHM6Ly9kYXRhY3NnbS1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw",
-  p: "ZGF0YWNzZ20uY3BnbG9yZ2R0Z20=",
-  s: "ZGF0YWNzZ20uZmlyZWJhc2VzdG9yYWdlLmFwcA==",
-  m: "MzcwMjIwNzU2NTg2",
-  a: "MTozNzAyMjA3NTY1ODY6d2ViOmYxMTgyNTZhZGI2NTlhYWVlMjQxMw==",
-  i: "OGIwRXhsemtpeHlZUzMUnBiZzQ5cnRtcFB5dXBsMg==",
-  e: "ZmFyaWRhcjI1QGdtYWlsLmNvbQ==",
-  w: "YWRtaW4xMjM="
-};
-
-const firebaseConfig = {
-  apiKey: atob(_CFG.k),
-  authDomain: atob(_CFG.d),
-  databaseURL: atob(_CFG.u),
-  projectId: atob(_CFG.p),
-  storageBucket: atob(_CFG.s),
-  messagingSenderId: atob(_CFG.m),
-  appId: atob(_CFG.a)
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const database = firebase.database();
-
-const USER_UID = atob(_CFG.i);
-const USER_EMAIL = atob(_CFG.e);
-const USER_PASSWORD = atob(_CFG.w);
-
+const _CFG={k:"QUl6YVN5QkRwMHVGS0wwRkZ2WmhRMEtzdVdCdFZNMDM0cmR0TUU=",d:"ZGF0YWNzZ20uZmlyZWJhc2UuY29t",u:"aHR0cHM6Ly9kYXRhY3NnbS1kZWZhdWx0LXJ0ZGIuYXNpYS1zb3V0aGVhc3QxLmZpcmViYXNlZGF0YWJhc2UuYXBw",p:"ZGF0YWNzZ20uY3BnbG9yZ2R0Z20=",s:"ZGF0YWNzZ20uZmlyZWJhc2VzdG9yYWdlLmFwcA==",m:"MzcwMjIwNzU2NTg2",a:"MTozNzAyMjA3NTY1ODY6d2ViOmYxMTgyNTZhZGI2NTlhYWVlMjQxMw==",i:"OGIwRXhsemtpeHlZUzMUnBiZzQ5cnRtcFB5dXBsMg==",e:"ZmFyaWRhcjI1QGdtYWlsLmNvbQ==",w:"YWRtaW4xMjM="};const firebaseConfig={apiKey:atob(_CFG.k),authDomain:atob(_CFG.d),databaseURL:atob(_CFG.u),projectId:atob(_CFG.p),storageBucket:atob(_CFG.s),messagingSenderId:atob(_CFG.m),appId:atob(_CFG.a)};firebase.initializeApp(firebaseConfig);const auth=firebase.auth();const database=firebase.database();const USER_UID=atob(_CFG.i),USER_EMAIL=atob(_CFG.e),USER_PASSWORD=atob(_CFG.w);
 
         let dataCustomer = [];
         let itemsToShow = 6;
