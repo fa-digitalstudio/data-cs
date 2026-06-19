@@ -1,6 +1,6 @@
 {
   "name": "Sistem Data Customer Driver",
-  "short_name": "Buku Customer",
+  "short_name": "Admin Buku Customer",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f9fafb",
