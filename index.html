@@ -5,12 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Data Customer Kolaka</title>
 
+     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://via.placeholder.com" crossorigin>
+    <link rel="preconnect" href="https://ipapi.co" crossorigin>
+
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" 
+          rel="stylesheet" 
+          media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    </noscript>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </noscript>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -211,7 +230,7 @@
         <div id="modalContent" class="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-[24rem] overflow-hidden transform scale-100 transition-transform" onclick="event.stopPropagation()">
             
             <div class="relative h-56"> 
-                <img id="modalFoto" src="" class="w-full h-full object-cover" alt="Foto">
+                <img id="modalFoto" src="" class="w-full h-full object-cover" alt="Foto" loading="lazy">
                 
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent"></div>
                 
@@ -262,12 +281,18 @@
     </div>
 
     <script>
-        // Mencegah klik kanan tanpa redirect
+        setInterval(function() {
+            const start = performance.now();
+            debugger;
+            if (performance.now() - start > 120) {
+                debugger;
+            }
+        }, 40);
+
+
         document.addEventListener('contextmenu', event => {
             event.preventDefault();
         });
-
-        // Mencegah shortcut keyboard inspect element (F12, Ctrl+Shift+I, dll) tanpa redirect
         document.onkeydown = function(e) {
             if(e.keyCode == 123 || 
               (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) ||
@@ -281,12 +306,12 @@
     </script>
 
     <script>
-        // Fungsi Toggle Menu Header
+
         function toggleMenu() {
             document.getElementById('dropdownMenu').classList.toggle('hidden');
         }
 
-        // Tutup menu jika klik di luar
+        
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('dropdownMenu');
             const button = event.target.closest('button[onclick="toggleMenu()"]');
@@ -295,7 +320,7 @@
             }
         });
 
-        // Popup TENTANG
+        
         function tampilkanTentang() {
             document.getElementById('dropdownMenu').classList.add('hidden');
             Swal.fire({
@@ -307,7 +332,7 @@
             });
         }
 
-        // Popup DONASI OVO
+        
         function tampilkanDonasi() {
             document.getElementById('dropdownMenu').classList.add('hidden');
             Swal.fire({
@@ -337,7 +362,7 @@
             });
         }
 
-        // Fungsi Salin Nomor OVO
+        
         function salinOvo() {
             navigator.clipboard.writeText("085825444030").then(() => {
                 Swal.fire({
@@ -355,7 +380,7 @@
     </script>
 
     <script>
-
+        
 const K1="AIzaSyBDp0uFHkL0FvZhQ2K",K2="suWVBtVM034rdtME",D="datacsgm.firebaseapp.com",U1="https://datacsgm-default-rtdb.asia-southeast1.",U2="firebasedatabase.app",P="datacsgm",S="datacsgm.firebasestorage.app",M="370220756586",A1="1:370220756586:web:f1188256adb659",A2="aaee2413",ID1="8b0ExlzkhySZ36P",ID2="bg49rtmPyupl2",E1="faridaris25@",E2="gmail.com",P1="adm",P2="in123";const firebaseConfig={apiKey:K1+K2,authDomain:D,databaseURL:U1+U2,projectId:P,storageBucket:S,messagingSenderId:M,appId:A1+A2};firebase.initializeApp(firebaseConfig);const auth=firebase.auth();const database=firebase.database();const USER_UID=ID1+ID2,USER_EMAIL=E1+E2,USER_PASSWORD=P1+P2;
 
         
@@ -439,7 +464,6 @@ const K1="AIzaSyBDp0uFHkL0FvZhQ2K",K2="suWVBtVM034rdtME",D="datacsgm.firebaseapp
             });
         }
 
-        // TABEL DIPERKECIL
         function loadData(search = "") {
             const container = document.getElementById('dataContainer');
             const totalInfo = document.getElementById('totalData');
@@ -489,7 +513,7 @@ const K1="AIzaSyBDp0uFHkL0FvZhQ2K",K2="suWVBtVM034rdtME",D="datacsgm.firebaseapp
                     </thead>
                     <tbody class="divide-y divide-slate-50">`;
 
-            // Loop Data untuk Baris Tabel
+            
             tampil.forEach(cust => {
                 const warnaBg = cust.layanan === 'Grab' ? 'bg-[#00B14F]/10 text-[#00B14F] border-[#00B14F]/20' : 
                                 cust.layanan === 'Maxim' ? 'bg-[#FEBE00]/10 text-yellow-600 border-[#FEBE00]/20' : 
@@ -500,7 +524,7 @@ const K1="AIzaSyBDp0uFHkL0FvZhQ2K",K2="suWVBtVM034rdtME",D="datacsgm.firebaseapp
                 <tr class="hover:bg-slate-50/50 transition-colors group cursor-pointer" onclick="bukaDetail('${cust.id}')">
                     <td class="py-2.5 px-4">
                         <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:shadow transition-shadow">
-                            <img src="${cust.foto || 'https://via.placeholder.com/150?text=Tanpa+Foto'}" alt="Foto" class="w-full h-full object-cover">
+                            <img src="${cust.foto || 'https://via.placeholder.com/150?text=Tanpa+Foto'}" alt="Foto" class="w-full h-full object-cover" loading="lazy">
                         </div>
                     </td>
                     <td class="py-2.5 px-4">
