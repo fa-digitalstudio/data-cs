@@ -600,6 +600,209 @@
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const kata = e.target.value.trim().toLowerCase();
             if(!kata) { 
-                semuaData = [...asliSemuaData]; 
+                                semuaData = asliSemuaData.filter(item => {
+                    return item.nama.toLowerCase().includes(kata) ||
+                           item.nohp.toLowerCase().includes(kata) ||
+                           item.layanan.toLowerCase().includes(kata) ||
+                           item.lokasi.toLowerCase().includes(kata);
+                });
             }
-            else {
+            itemsToShow = 5;
+            tampilkanKartu();
+        });
+
+        // FUNGSI LOKASI GPS
+        function getLocation() {
+            if (navigator.geolocation) {
+                Swal.fire({
+                    title: 'Mengambil Lokasi...',
+                    text: 'Mohon izinkan akses lokasi',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false
+                });
+                navigator.geolocation.getCurrentPosition(pos => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const link = `https://www.google.com/maps?q=${lat},${lng}`;
+                    document.getElementById('lokasi').value = link;
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Lokasi sudah dimasukkan',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }, err => {
+                    Swal.fire({
+                        title: 'Gagal!',
+                        text: 'Tidak dapat mengakses lokasi',
+                        icon: 'error',
+                        confirmButtonColor: '#ef4444'
+                    });
+                });
+            } else {
+                Swal.fire({
+                    text: 'Perangkat tidak mendukung GPS',
+                    icon: 'warning',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+
+        // UPLOAD FOTO & KONVERSI KE BASE64
+        function bukaGaleri() {
+            document.getElementById('foto').click();
+        }
+        function bukaKamera() {
+            document.getElementById('foto').click();
+        }
+        document.getElementById('foto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    fotoBase64 = evt.target.result;
+                    document.getElementById('previewFoto').src = fotoBase64;
+                    document.getElementById('previewFoto').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // SIMPAN DATA KE GOOGLE SHEET
+        document.getElementById('customerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showLoading();
+            const data = {
+                action: "create",
+                nama: document.getElementById('nama').value.trim(),
+                nohp: document.getElementById('nohp').value.trim(),
+                layanan: document.getElementById('layanan').value,
+                lokasi: document.getElementById('lokasi').value.trim(),
+                foto: fotoBase64 || ""
+            };
+
+            fetch(GS_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(data).toString()
+            })
+            .then(res => res.json())
+            .then(hasil => {
+                hideLoading();
+                if (hasil.status === "SUKSES") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Tersimpan!',
+                        text: 'Data berhasil ditambahkan',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    document.getElementById('customerForm').reset();
+                    fotoBase64 = "";
+                    document.getElementById('previewFoto').classList.add('hidden');
+                    ambilDataDariSheet();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: hasil.pesan || 'Terjadi kesalahan',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+            })
+            .catch(err => {
+                hideLoading();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Kesalahan Jaringan',
+                    text: err.message,
+                    confirmButtonColor: '#ef4444'
+                });
+            });
+        });
+
+        // BUKA MODAL DETAIL
+        function bukaDetail(idCari) {
+            const data = asliSemuaData.find(x => x.id === idCari);
+            if (!data) return;
+
+            document.getElementById('modalNama').innerText = data.nama;
+            document.getElementById('modalNoHP').innerText = data.nohp || 'Tidak Ada';
+            document.getElementById('modalFoto').src = data.foto;
+            document.getElementById('modalBtnWA').href = data.nohp ? `https://wa.me/62${data.nohp.replace(/^0/, '')}` : '#';
+            document.getElementById('modalBtnMaps').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.lokasi)}`;
+
+            const modal = document.getElementById('waModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modal.classList.remove('opacity-0');
+                document.getElementById('waModalContent').classList.remove('scale-95');
+                document.getElementById('waModalContent').classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('waModal');
+            modal.classList.add('opacity-0');
+            modal.classList.remove('opacity-100');
+            document.getElementById('waModalContent').classList.add('scale-95');
+            document.getElementById('waModalContent').classList.remove('scale-100');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // HAPUS DATA
+        function hapusData(idHapus) {
+            Swal.fire({
+                title: 'Hapus Data?',
+                text: "Data akan dihapus permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus!'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    showLoading();
+                    fetch(GS_URL + `?action=delete&id=${idHapus}`)
+                    .then(res => res.json())
+                    .then(hasil => {
+                        hideLoading();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Dihapus!',
+                            text: 'Data sudah dihapus',
+                            confirmButtonColor: '#ef4444'
+                        });
+                        ambilDataDariSheet();
+                    })
+                    .catch(err => {
+                        hideLoading();
+                        Swal.fire({icon:'error',title:'Gagal!',text:err.message,confirmButtonColor:'#ef4444'});
+                    });
+                }
+            });
+        }
+
+        function muatUlangData() {
+            ambilDataDariSheet();
+        }
+
+        // TUTUP MODAL KETIKA KLIK LUAR
+        document.getElementById('waModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // SLIDE BANNER OTOMATIS
+        let slideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        function nextSlide() {
+            slides.forEach(s => s.classList.remove('active'));
+            slideIndex = (slideIndex + 1) % slides.length;
+            slides[slideIndex].classList.add('active');
+        }
+        setInterval(nextSlide, 4000);
+    </script>
+</body>
+</html>
