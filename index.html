@@ -284,454 +284,266 @@
         </div>
     </div>
 
-    <script>
-        // ==========================================
-        // KONFIGURASI: GANTI URL INI DENGAN URL HASIL DEPLOY GOOGLE APPS SCRIPT KAMU
-        const GS_DEPLOY_URL = "https://script.google.com/macros/s/AKfycbzG_BNRXK8-f8d1HB3E6J7J8tciQ7KgHFJtlWHKldkzeIM-8YTv-Cgu6-VFFCuzCtgnmg/exec"; 
-        // ==========================================
+    <!-- ... (BIARKAN SEMUA KODE DI ATAS TETAP SAMA, JANGAN DIUBAH) ... -->
 
-        // FUNGSI BARU: KIRIM DATA KE GOOGLE SHEETS
-        function kirimSemuaDataKeGS() {
-            if (dataCustomer.length === 0) {
-                Swal.fire({icon: 'info', title: 'Kosong!', text: 'Tidak ada data untuk dikirim.'});
-                return;
-            }
+<script>
+// ==========================================
+// KONFIGURASI: PASTIKAN URL SCRIPT KAMU SUDAH BENAR DI SINI
+const GS_DEPLOY_URL = "https://script.google.com/macros/library/d/1EN7nVjGVBrkxdUoBW6wDiigcTEbmZvDETS9_N1gZPr3vCeupVEUqlQOM/2"; 
+// ==========================================
 
-            Swal.fire({
-                title: 'Mengirim Data...',
-                html: 'Sedang memproses <b>' + dataCustomer.length + ' data</b> ke Google Sheets',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
+// FUNGSI SIMPAN DATA: LANGSUNG KE SHEETS, TIDAK KE FIREBASE
+function simpanDataCustomer(dataBaru) {
+  // Data dikirim langsung ke Google Sheets
+  Swal.fire({
+    title: 'Mengirim Data...',
+    html: 'Sedang menyimpan data baru ke Google Sheets',
+    allowOutsideClick: false,
+    didOpen: () => { Swal.showLoading(); }
+  });
 
-            fetch(GS_DEPLOY_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: dataCustomer })
-            })
-            .then(res => res.json())
-            .then(res => {
-                if (res.status === "sukses") {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'BERHASIL! 🎉',
-                        html: `
-                            <p class="text-left">✅ Total Data: <b>${res.jumlahData}</b></p>
-                            <p class="text-left">🖼️ Foto Tersimpan: <b>${res.jumlahFotoTersimpan}</b></p>
-                            <p class="text-left mt-2 text-sm text-slate-600">Semua data aman, tidak terhapus di Firebase.</p>
-                        `,
-                        confirmButtonColor: '#059669'
-                    });
-                } else {
-                    Swal.fire({icon: 'error', title: 'Gagal!', text: res.pesan || 'Terjadi kesalahan', confirmButtonColor: '#ef4444'});
-                }
-            })
-            .catch(err => {
-                Swal.fire({icon: 'error', title: 'Error Koneksi!', text: 'Gagal terhubung ke server: ' + err, confirmButtonColor: '#ef4444'});
-            });
-        }
+  fetch(GS_DEPLOY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data: [dataBaru] }) // Kirim 1 data baru saja
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.status === "sukses") {
+      Swal.fire({
+        icon: 'success',
+        title: 'BERHASIL DISIMPAN! 🎉',
+        text: 'Data langsung masuk ke Google Sheets. Firebase tidak terisi.',
+        confirmButtonColor: '#059669'
+      });
+      // Kosongkan form input di sini (sesuaikan dengan nama input kamu)
+      // document.getElementById('nama').value = "";
+      // document.getElementById('nohp').value = "";
+    } else {
+      Swal.fire({icon: 'error', title: 'Gagal!', text: res.pesan || 'Terjadi kesalahan'});
+    }
+  })
+  .catch(err => {
+    Swal.fire({icon: 'error', title: 'Error!', text: 'Koneksi bermasalah: ' + err});
+  });
+}
 
-        // SCRIPT KEAMANAN ASLI (TIDAK DIUBAH)
-        setInterval(function() {
-            const start = performance.now();
-            debugger;
-            if (performance.now() - start > 120) {
-                debugger;
-            }
-        }, 40);
-
-        document.addEventListener('contextmenu', event => {
-            event.preventDefault();
-        });
-        document.onkeydown = function(e) {
-            if(e.keyCode == 123 || 
-              (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) ||
-              (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) ||
-              (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) ||
-              (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
-                return false; 
-            }
-        };
-    </script>
-
-    <script>
-        function toggleMenu() {
-            document.getElementById('dropdownMenu').classList.toggle('hidden');
-        }
-
-        document.addEventListener('click', function(event) {
-            const menu = document.getElementById('dropdownMenu');
-            const button = event.target.closest('button[onclick="toggleMenu()"]');
-            if (!button && !menu.contains(event.target)) {
-                menu.classList.add('hidden');
-            }
-        });
-
-        function tampilkanTentang() {
-            document.getElementById('dropdownMenu').classList.add('hidden');
-            Swal.fire({
-                title: 'Tentang Aplikasi',
-                html: '<p class="text-sm text-slate-600">Website Data Customer v1.0<br>Sistem manajemen data pelanggan yang aman dan tersimpan di cloud pribadi</p>',
-                icon: 'info',
-                confirmButtonColor: '#059669',
-                customClass: { popup: 'rounded-[1.5rem]', title: 'font-extrabold text-xl' }
-            });
-        }
-
-        function tampilkanDonasi() {
-            document.getElementById('dropdownMenu').classList.add('hidden');
-            Swal.fire({
-                title: '<span class="text-purple-700">DONASI</span>',
-                html: `
-                    <div class="mt-2 text-slate-600 text-sm">
-                        <p class="mb-4">Bantu dukung pengembangan sistem ini dengan berdonasi seikhlasnya via OVO.</p>
-                        <div class="bg-purple-50 border border-purple-100 rounded-2xl p-5 relative overflow-hidden shadow-inner">
-                            <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-bl-full -z-0"></div>
-                            <h4 class="font-bold text-purple-600 text-lg mb-1 relative z-10 flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-wallet"></i> OVO
-                            </h4>
-                            <p class="font-extrabold text-3xl text-slate-800 tracking-wider mb-2 relative z-10 drop-shadow-sm" id="nomorOvo">085825444030</p>
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest relative z-10 bg-white/60 inline-block px-3 py-1 rounded-md">A.N FARID ARIS</p>
-                        </div>
-                        <button onclick="salinOvo()" class="mt-5 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg hover:shadow-purple-500/40 active:scale-95 flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-copy"></i> Salin Nomor OVO
-                        </button>
-                    </div>
-                `,
-                showConfirmButton: false,
-                showCloseButton: true,
-                customClass: { 
-                    popup: 'rounded-[1.5rem]', 
-                    title: 'font-extrabold text-2xl pt-2' 
-                }
-            });
-        }
-
-        function salinOvo() {
-            navigator.clipboard.writeText("085825444030").then(() => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil Disalin!',
-                    text: 'Nomor OVO berhasil disalin ke clipboard.',
-                    timer: 2000,
-                    showConfirmButton: false,
-                    customClass: { popup: 'rounded-[1.5rem]', title: 'font-extrabold text-xl' }
-                });
-            }).catch(err => {
-                console.error('Gagal menyalin:', err);
-            });
-        }
-    </script>
-
-    <script>
+// ==========================================
+// BAGIAN FIREBASE DI BAWAH INI HANYA UNTUK BACA DATA LAMA SAJA
+// DATA TIDAK AKAN DISIMPAN KE SINI LAGI
+// ==========================================
 const K1="AIzaSyBDp0uFHkL0FvZhQ2K",K2="suWVBtVM034rdtME",D="datacsgm.firebaseapp.com",U1="https://datacsgm-default-rtdb.asia-southeast1.",U2="firebasedatabase.app",P="datacsgm",S="datacsgm.firebasestorage.app",M="370220756586",A1="1:370220756586:web:f1188256adb659",A2="aaee2413",ID1="8b0ExlzkhySZ36P",ID2="bg49rtmPyupl2",E1="faridaris25@",E2="gmail.com",P1="adm",P2="in123";const firebaseConfig={apiKey:K1+K2,authDomain:D,databaseURL:U1+U2,projectId:P,storageBucket:S,messagingSenderId:M,appId:A1+A2};firebase.initializeApp(firebaseConfig);const auth=firebase.auth();const database=firebase.database();const USER_UID=ID1+ID2,USER_EMAIL=E1+E2,USER_PASSWORD=P1+P2;
 
-        let dataCustomer = [];
-        let itemsToShow = 6;
+let dataCustomer = [];
+let itemsToShow = 6;
 
-        function showLoading() {
-            document.getElementById('loadingIndicator').classList.remove('hidden');
-        }
-        function hideLoading() {
-            document.getElementById('loadingIndicator').classList.add('hidden');
-        }
+function showLoading() {
+    document.getElementById('loadingIndicator').classList.remove('hidden');
+}
+function hideLoading() {
+    document.getElementById('loadingIndicator').classList.add('hidden');
+}
 
-        function tampilkanPeringatan() {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Akses Ditolak!',
-                text: 'Hanya Farid Ganteng yang punya akses untuk melihat nomor customer! Hahahaha',
-                confirmButtonColor: '#059669',
-                confirmButtonText: 'Ampun Om',
-                backdrop: `rgba(15, 23, 42, 0.8)`,
-                customClass: { popup: 'rounded-3xl', title: 'font-extrabold text-xl' }
+function tampilkanPeringatan() {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Akses Ditolak!',
+        text: 'Hanya Farid Ganteng yang punya akses untuk melihat nomor customer! Hahahaha',
+        confirmButtonColor: '#059669',
+        confirmButtonText: 'Ampun Om',
+        backdrop: `rgba(15, 23, 42, 0.8)`,
+        customClass: { popup: 'rounded-3xl', title: 'font-extrabold text-xl' }
+    });
+}
+
+function loginWithEmail() {
+    showLoading();
+    if (auth.currentUser && auth.currentUser.uid === USER_UID) {
+        ambilDataDariFirebase();
+        return;
+    }
+    auth.signInWithEmailAndPassword(USER_EMAIL, USER_PASSWORD)
+    .then(() => {
+        console.log("Login berhasil");
+        ambilDataDariFirebase();
+    })
+    .catch(error => {
+        console.error("Gagal login:", error);
+        hideLoading();
+        document.getElementById('dataContainer').innerHTML = `
+        <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-500 bg-white rounded-3xl shadow-sm border border-slate-100">
+            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-red-400"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-700">Gagal Masuk</h3>
+            <p class="text-sm mt-2">Cek kembali email & sandi akun Firebase</p>
+        </div>`;
+    });
+}
+
+function ambilDataDariFirebase() {
+    database.ref('customers').once('value')
+    .then(snapshot => {
+        dataCustomer = [];
+        if (snapshot.exists()) {
+            snapshot.forEach(child => {
+                const val = child.val();
+                if (!val.id) val.id = child.key;
+                dataCustomer.push(val);
+            });
+            dataCustomer.sort((a, b) => {
+                const idA = Number(a.id) || a.id;
+                const idB = Number(b.id) || b.id;
+                return idB > idA ? 1 : -1;
             });
         }
+        hideLoading();
+        loadData("");
+    })
+    .catch(error => {
+        console.error("Kesalahan baca data:", error);
+        hideLoading();
+        document.getElementById('dataContainer').innerHTML = `
+        <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-500 bg-white rounded-3xl shadow-sm border border-slate-100">
+            <div class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-700">Gagal Memuat Data</h3>
+            <p class="text-sm mt-2">Pastikan rules Firebase mengizinkan akses baca</p>
+        </div>`;
+    });
+}
 
-        function loginWithEmail() {
-            showLoading();
-            if (auth.currentUser && auth.currentUser.uid === USER_UID) {
-                ambilDataDariFirebase();
-                return;
-            }
-            auth.signInWithEmailAndPassword(USER_EMAIL, USER_PASSWORD)
-            .then(() => {
-                console.log("Login berhasil");
-                ambilDataDariFirebase();
-            })
-            .catch(error => {
-                console.error("Gagal login:", error);
-                hideLoading();
-                document.getElementById('dataContainer').innerHTML = `
-                <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-500 bg-white rounded-3xl shadow-sm border border-slate-100">
-                    <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-triangle-exclamation text-4xl text-red-400"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-700">Gagal Masuk</h3>
-                    <p class="text-sm mt-2">Cek kembali email & sandi akun Firebase</p>
-                </div>`;
-            });
-        }
+function loadData(search = "") {
+    const container = document.getElementById('dataContainer');
+    const totalInfo = document.getElementById('totalData');
+    const loadMoreBtn = document.getElementById('loadMoreContainer');
 
-        function ambilDataDariFirebase() {
-            database.ref('customers').once('value')
-            .then(snapshot => {
-                dataCustomer = [];
-                if (snapshot.exists()) {
-                    snapshot.forEach(child => {
-                        const val = child.val();
-                        if (!val.id) val.id = child.key;
-                        dataCustomer.push(val);
-                    });
-                    dataCustomer.sort((a, b) => {
-                        const idA = Number(a.id) || a.id;
-                        const idB = Number(b.id) || b.id;
-                        return idB > idA ? 1 : -1;
-                    });
-                }
-                hideLoading();
-                loadData("");
-            })
-            .catch(error => {
-                console.error("Kesalahan baca data:", error);
-                hideLoading();
-                document.getElementById('dataContainer').innerHTML = `
-                <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-500 bg-white rounded-3xl shadow-sm border border-slate-100">
-                    <div class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-700">Gagal Memuat Data</h3>
-                    <p class="text-sm mt-2">Pastikan rules Firebase mengizinkan akses baca</p>
-                </div>`;
-            });
-        }
+    let dataTampil = [...dataCustomer];
 
-        function loadData(search = "") {
-            const container = document.getElementById('dataContainer');
-            const totalInfo = document.getElementById('totalData');
-            const loadMoreBtn = document.getElementById('loadMoreContainer');
+    if(search.trim()) {
+        const q = search.toLowerCase().trim();
+        dataTampil = dataTampil.filter(cust => 
+            (cust.nama && cust.nama.toLowerCase().includes(q)) ||
+            (cust.lokasi && cust.lokasi.toLowerCase().includes(q)) ||
+            (cust.nohp && cust.nohp.includes(q)) ||
+            (cust.layanan && cust.layanan.toLowerCase().includes(q))
+        );
+    }
 
-            let dataTampil = [...dataCustomer];
+    totalInfo.innerText = `${dataTampil.length} Data`;
 
-            if(search.trim()) {
-                const q = search.toLowerCase().trim();
-                dataTampil = dataTampil.filter(cust => 
-                    (cust.nama && cust.nama.toLowerCase().includes(q)) ||
-                    (cust.lokasi && cust.lokasi.toLowerCase().includes(q)) ||
-                    (cust.nohp && cust.nohp.includes(q)) ||
-                    (cust.layanan && cust.layanan.toLowerCase().includes(q))
-                );
-            }
+    if(dataTampil.length === 0) {
+        container.innerHTML = `
+        <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-500 bg-white/80 backdrop-blur rounded-3xl shadow-sm border border-slate-100">
+            <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-5">
+                <i class="fa-solid fa-box-open text-5xl text-slate-300"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-700">Tidak ada data</h3>
+            <p class="text-sm mt-2 text-slate-400">Belum ada data tersimpan / tidak ditemukan</p>
+        </div>`;
+        loadMoreBtn.classList.add('hidden');
+        return;
+    }
 
-            totalInfo.innerText = `${dataTampil.length} Data`;
+    const tampil = dataTampil.slice(0, itemsToShow);
+    
+    let html = `
+    <div class="w-full overflow-x-auto bg-white rounded-2xl shadow-sm border border-slate-100">
+        <table class="w-full text-left border-collapse whitespace-nowrap min-w-[600px]">
+            <thead>
+                <tr class="bg-slate-50/80 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-100">
+                    <th class="py-3 px-4 font-bold w-12">Foto</th>
+                    <th class="py-3 px-4 font-bold">Nama Customer</th>
+                    <th class="py-3 px-4 font-bold">Layanan</th>
+                    <th class="py-3 px-4 font-bold">Lokasi</th>
+                    <th class="py-3 px-4 font-bold text-right">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">`;
 
-            if(dataTampil.length === 0) {
-                container.innerHTML = `
-                <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-500 bg-white/80 backdrop-blur rounded-3xl shadow-sm border border-slate-100">
-                    <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-5">
-                        <i class="fa-solid fa-box-open text-5xl text-slate-300"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-700">Tidak ada data</h3>
-                    <p class="text-sm mt-2 text-slate-400">Belum ada data tersimpan / tidak ditemukan</p>
-                </div>`;
-                loadMoreBtn.classList.add('hidden');
-                return;
-            }
+    tampil.forEach(cust => {
+        const warnaBg = cust.layanan === 'Grab' ? 'bg-[#00B14F]/10 text-[#00B14F] border-[#00B14F]/20' : 
+                        cust.layanan === 'Maxim' ? 'bg-[#FEBE00]/10 text-yellow-600 border-[#FEBE00]/20' : 
+                        cust.layanan === 'Gojek' ? 'bg-[#00AA13]/10 text-[#00AA13] border-[#00AA13]/20' :
+                        'bg-slate-100 text-slate-600 border-slate-200';
 
-            const tampil = dataTampil.slice(0, itemsToShow);
-            
-            let html = `
-            <div class="w-full overflow-x-auto bg-white rounded-2xl shadow-sm border border-slate-100">
-                <table class="w-full text-left border-collapse whitespace-nowrap min-w-[600px]">
-                    <thead>
-                        <tr class="bg-slate-50/80 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-100">
-                            <th class="py-3 px-4 font-bold w-12">Foto</th>
-                            <th class="py-3 px-4 font-bold">Nama Customer</th>
-                            <th class="py-3 px-4 font-bold">Layanan</th>
-                            <th class="py-3 px-4 font-bold">Lokasi</th>
-                            <th class="py-3 px-4 font-bold text-right">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">`;
+        html += `
+        <tr class="hover:bg-slate-50/50 transition-colors group cursor-pointer" onclick="bukaDetail('${cust.id}')">
+            <td class="py-2.5 px-4">
+                <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:shadow transition-shadow">
+                    <img src="${cust.foto || 'https://via.placeholder.com/150?text=Tanpa+Foto'}" alt="Foto" class="w-full h-full object-cover" loading="lazy">
+                </div>
+            </td>
+            <td class="py-2.5 px-4">
+                <p class="font-extrabold text-slate-800 text-[13px] group-hover:text-emerald-600 transition-colors truncate max-w-[140px] md:max-w-[200px]">${cust.nama || '-'}</p>
+            </td>
+            <td class="py-2.5 px-4">
+                <span class="${warnaBg} border px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">${cust.layanan || '-'}</span>
+            </td>
+            <td class="py-2.5 px-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-location-dot text-slate-300 text-xs group-hover:text-emerald-500 transition-colors"></i>
+                    <span class="text-[13px] text-slate-500 font-medium truncate max-w-[140px] md:max-w-[200px]">${cust.lokasi || '-'}</span>
+                </div>
+            </td>
+            <td class="py-2.5 px-4 text-right">
+                <button class="w-7 h-7 rounded-full bg-slate-50 text-slate-400 group-hover:bg-emerald-50 group-hover:text-emerald-600 flex items-center justify-center transition-colors ml-auto">
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </button>
+            </td>
+        </tr>`;
+    });
 
-            tampil.forEach(cust => {
-                const warnaBg = cust.layanan === 'Grab' ? 'bg-[#00B14F]/10 text-[#00B14F] border-[#00B14F]/20' : 
-                                cust.layanan === 'Maxim' ? 'bg-[#FEBE00]/10 text-yellow-600 border-[#FEBE00]/20' : 
-                                cust.layanan === 'Gojek' ? 'bg-[#00AA13]/10 text-[#00AA13] border-[#00AA13]/20' :
-                                'bg-slate-100 text-slate-600 border-slate-200';
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+    loadMoreBtn.classList.toggle('hidden', itemsToShow >= dataTampil.length);
+}
 
-                html += `
-                <tr class="hover:bg-slate-50/50 transition-colors group cursor-pointer" onclick="bukaDetail('${cust.id}')">
-                    <td class="py-2.5 px-4">
-                        <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:shadow transition-shadow">
-                            <img src="${cust.foto || 'https://via.placeholder.com/150?text=Tanpa+Foto'}" alt="Foto" class="w-full h-full object-cover" loading="lazy">
-                        </div>
-                    </td>
-                    <td class="py-2.5 px-4">
-                        <p class="font-extrabold text-slate-800 text-[13px] group-hover:text-emerald-600 transition-colors truncate max-w-[140px] md:max-w-[200px]">${cust.nama || '-'}</p>
-                    </td>
-                    <td class="py-2.5 px-4">
-                        <span class="${warnaBg} border px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">${cust.layanan || '-'}</span>
-                    </td>
-                    <td class="py-2.5 px-4">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-location-dot text-slate-300 text-xs group-hover:text-emerald-500 transition-colors"></i>
-                            <span class="text-[13px] text-slate-500 font-medium truncate max-w-[140px] md:max-w-[200px]">${cust.lokasi || '-'}</span>
-                        </div>
-                    </td>
-                    <td class="py-2.5 px-4 text-right">
-                        <button class="w-7 h-7 rounded-full bg-slate-50 text-slate-400 group-hover:bg-emerald-50 group-hover:text-emerald-600 flex items-center justify-center transition-colors ml-auto">
-                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                        </button>
-                    </td>
-                </tr>`;
-            });
+function loadMore() {
+    itemsToShow += 6;
+    loadData(document.getElementById('searchInput').value);
+}
 
-            html += `</tbody></table></div>`;
-            container.innerHTML = html;
-            loadMoreBtn.classList.toggle('hidden', itemsToShow >= dataTampil.length);
-        }
+function bukaDetail(id) {
+    const cust = dataCustomer.find(c => String(c.id) === String(id));
+    if(!cust) return;
 
-        function loadMore() {
-            itemsToShow += 6;
-            loadData(document.getElementById('searchInput').value);
-        }
+    document.getElementById('modalFoto').src = cust.foto || 'https://via.placeholder.com/400x400?text=Tanpa+Foto';
+    document.getElementById('modalNama').innerText = cust.nama || '-';
+    document.getElementById('modalLayanan').innerText = `${cust.layanan || '-'}`;
+    document.getElementById('modalNoHP').innerText = Math.floor(Math.random() * 10) === 5 ? (cust.nohp ? cust.nohp : 'Tidak ada nomor') : '**********';
+    document.getElementById('modalLokasi').innerText = cust.lokasi || 'Tidak ada alamat';
 
-        function bukaDetail(id) {
-            const cust = dataCustomer.find(c => String(c.id) === String(id));
-            if(!cust) return;
+    const lokasiAsli = cust.lokasi || '';
+    const polaKoordinat = /^-?\d{1,3}\.\d+[,\s]+-?\d{1,3}\.\d+$/;
 
-            document.getElementById('modalFoto').src = cust.foto || 'https://via.placeholder.com/400x400?text=Tanpa+Foto';
-            document.getElementById('modalNama').innerText = cust.nama || '-';
-            document.getElementById('modalLayanan').innerText = `${cust.layanan || '-'}`;
-            document.getElementById('modalNoHP').innerText = Math.floor(Math.random() * 10) === 5 ? (cust.nohp ? cust.nohp : 'Tidak ada nomor') : '**********';
-            document.getElementById('modalLokasi').innerText = cust.lokasi || 'Tidak ada alamat';
+    let tautanMaps;
+    if (polaKoordinat.test(lokasiAsli.trim())) {
+        const koordinatBersih = lokasiAsli.trim().replace(/\s+/g, '');
+        tautanMaps = `https://www.google.com/maps?q=${koordinatBersih}%0A${encodeURIComponent(lokasiAsli)}`;
+    } else {
+        tautanMaps = `https://www.google.com/maps?q=${encodeURIComponent(lokasiAsli)}`;
+    }
 
-            const lokasiAsli = cust.lokasi || '';
-            const polaKoordinat = /^-?\d{1,3}\.\d+[,\s]+-?\d{1,3}\.\d+$/;
+    document.getElementById('modalMaps').href = tautanMaps;
+    document.getElementById('detailModal').classList.remove('hidden');
+}
 
-            let tautanMaps;
-            if (polaKoordinat.test(lokasiAsli.trim())) {
-                const koordinatBersih = lokasiAsli.trim().replace(/\s+/g, '');
-                tautanMaps = `https://www.google.com/maps?q=${koordinatBersih}%0A${encodeURIComponent(lokasiAsli)}`;
-            } else {
-                tautanMaps = `https://www.google.com/maps?q=${encodeURIComponent(lokasiAsli)}`;
-            }
+function closeModal() {
+    document.getElementById('detailModal').classList.add('hidden');
+}
 
-            document.getElementById('modalMaps').href = tautanMaps;
-            document.getElementById('detailModal').classList.remove('hidden');
-        }
+window.addEventListener('load', () => {
+    loginWithEmail();
+});
 
-        function closeModal() {
-            document.getElementById('detailModal').classList.add('hidden');
-        }
+document.getElementById('searchInput').addEventListener('input', e => {
+    clearTimeout(window.cariTunggu);
+    window.cariTunggu = setTimeout(() => loadData(e.target.value), 300);
+});
+</script>
 
-        window.addEventListener('load', () => {
-            loginWithEmail();
-        });
-
-        document.getElementById('searchInput').addEventListener('input', e => {
-            clearTimeout(window.cariTunggu);
-            window.cariTunggu = setTimeout(() => loadData(e.target.value), 300);
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const slides = document.querySelectorAll('.slide');
-            const indicators = document.querySelectorAll('.indicator');
-            let currentSlide = 0;
-
-            if(slides.length > 0) {
-                setInterval(() => {
-                    slides[currentSlide].classList.remove('opacity-100');
-                    slides[currentSlide].classList.add('opacity-0');
-                    indicators[currentSlide].classList.replace('w-4', 'w-1.5');
-                    indicators[currentSlide].classList.replace('bg-white', 'bg-white/40');
-
-                    currentSlide = (currentSlide + 1) % slides.length;
-
-                    slides[currentSlide].classList.remove('opacity-0');
-                    slides[currentSlide].classList.add('opacity-100');
-                    indicators[currentSlide].classList.replace('w-1.5', 'w-4');
-                    indicators[currentSlide].classList.replace('bg-white/40', 'bg-white');
-                }, 4000); 
-            }
-        });
-    </script>
-
-    <script>
-        async function tampilkanSambutan() {
-            if (localStorage.getItem('hideWelcomePopup') === 'true') {
-                return; 
-            }
-
-            let ipAddress = 'IP Tersembunyi';
-            let ispName = 'Mendeteksi jaringan...';
-
-            try {
-                const res = await fetch('https://ipapi.co/json/');
-                const data = await res.json();
-                ipAddress = data.ip || 'IP Tersembunyi';
-                ispName = data.org || 'Jaringan lokal / ISP Tidak Diketahui';
-            } catch (error) {
-                ispName = "Jaringan tersembunyi";
-            }
-
-            let os = "Perangkat Keren";
-            const userAgent = navigator.userAgent;
-            if (userAgent.indexOf("Win") != -1) os = "Windows 🖥";
-            if (userAgent.indexOf("Mac") != -1) os = "MacOS💻";
-            if (userAgent.indexOf("Android") != -1) os = "Android📱";
-            if (userAgent.indexOf("iPhone") != -1) os = "iPhone📱";
-
-            Swal.fire({
-                title: "Assalamu'alaikum driver ganteng!",
-                width: '280px', 
-                html: `
-                    <div class="text-slate-600 text-xs mt-1 leading-relaxed">
-                        Perangkat yang anda gunakan <b class="text-slate-800">${os}</b>
-                        
-                        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-2.5 mb-3 text-left shadow-inner">
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <i class="fa-solid fa-satellite-dish text-emerald-500 w-4 text-center"></i>
-                                <span class="font-semibold text-[11px]">${ipAddress}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-wifi text-blue-500 w-4 text-center"></i>
-                                <span class="font-medium text-[11px] truncate" title="${ispName}">${ispName}</span>
-                            </div>
-                        </div>
-
-                        <span class="font-bold text-emerald-600 text-[13px]">Selamat datang di Data Customer!</span>
-                        
-                        <div class="mt-4 flex items-center justify-center gap-2 border-t border-slate-100 pt-3">
-                            <input type="checkbox" id="janganTampilLagi" class="w-3.5 h-3.5 text-emerald-600 bg-slate-100 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer">
-                            <label for="janganTampilLagi" class="text-[11px] font-semibold text-slate-500 cursor-pointer select-none tracking-wide">Jangan tampilkan lagi</label>
-                        </div>
-                    </div>
-                `,
-                icon: 'info',
-                confirmButtonColor: '#059669',
-                confirmButtonText: 'OK',
-                backdrop: 'rgba(15, 23, 42, 0.8)',
-                customClass: { 
-                    popup: 'rounded-[1.2rem] pb-4 pt-4 px-3', 
-                    title: 'font-extrabold text-lg text-slate-800 pt-2',
-                    icon: 'scale-75 mb-0 mt-2' 
-                },
-                preConfirm: () => {
-                    const checkbox = document.getElementById('janganTampilLagi');
-                    if (checkbox && checkbox.checked) {
-                        localStorage.setItem('hideWelcomePopup', 'true');
-                    }
-                }
-            });
-        }
-
-        window.addEventListener('load', () => {
-            setTimeout(tampilkanSambutan, 1500);
-        });
-    </script>
+<!-- ... (BIARKAN SEMUA KODE DI BAWAH TETAP SAMA) ... -->
 </body>
 </html>
