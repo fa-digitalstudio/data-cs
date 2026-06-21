@@ -432,6 +432,9 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // ✅ URL GOOGLE SCRIPT SUDAH DISESUAIKAN
+        const GS_DEPLOY_URL = "https://script.google.com/macros/s/AKfycbwodCyS1L7FksUtN1LUYgKMFkSSEe-XqLslul64frJxu2P8aSRt5YfUdPAF0U0ZI8TX1w/exec";
+
         let fotoBase64 = "";
         let itemsToShow = 5; 
         let semuaData = [];
@@ -598,7 +601,7 @@
                     x.layanan.toLowerCase().includes(kata)
                 );
             }
-            document.getElementById('totalData').innerText = `${semuaData.length} Data Terdeteksi`;
+                        document.getElementById('totalData').innerText = `${semuaData.length} Data Terdeteksi`;
             itemsToShow = 5; 
             tampilkanKartu();
         });
@@ -645,24 +648,45 @@
             },err=>{ lok.value="Gagal mendapatkan lokasi presisi, pastikan GPS Anda aktif dan berada di area terbuka"; }, opsiGPS);
         }
 
-        // FORM SIMPAN DATA
+        // ✅ BAGIAN SIMPAN DATA SUDAH DIPERBAIKI: KE GOOGLE SHEETS SAJA, TIDAK KE FIREBASE
         document.getElementById('customerForm').addEventListener('submit', function(e){
             e.preventDefault(); showLoading();
             const dataBaru = {
+                id: Date.now().toString(),
                 nama: document.getElementById('nama').value.trim(),
                 nohp: document.getElementById('nohp').value.trim(),
                 layanan: document.getElementById('layanan').value,
                 lokasi: document.getElementById('lokasi').value.trim(),
                 foto: fotoBase64 || 'https://via.placeholder.com/400x400?text=Tanpa+Foto'
             };
-            const kunci = Date.now().toString();
-            db.ref('customers/'+kunci).set(dataBaru)
-            .then(()=>{
-                this.reset(); fotoBase64=""; document.getElementById('previewFoto').classList.add('hidden'); hideLoading();
-                Swal.fire({icon:'success',title:'Berhasil!',text:'Data tersimpan di cloud',confirmButtonColor:'#10b981'});
-                ambilDataLangsung();
+
+            // 🔴 HAPUS KODE SIMPAN KE FIREBASE, GANTI DENGAN KIRIM KE GOOGLE SHEETS
+            fetch(GS_DEPLOY_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: [dataBaru] })
             })
-            .catch(err=>{ hideLoading(); Swal.fire({icon:'error',title:'Gagal Menyimpan',text:err.message,confirmButtonColor:'#ef4444'}); });
+            .then(() => {
+                this.reset(); 
+                fotoBase64 = ""; 
+                document.getElementById('previewFoto').classList.add('hidden'); 
+                hideLoading();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'BERHASIL DISIMPAN! ✅',
+                    html: `
+                        <p>Data sudah masuk ke Google Sheets.</p>
+                        <p class="text-red-600 font-bold mt-2">Database Firebase: KOSONG / TIDAK BERTAMBAH</p>
+                    `,
+                    confirmButtonColor: '#10b981'
+                });
+                // ambilDataLangsung(); // <-- DIMATIKAN KARENA TIDAK ADA DATA BARU DI FIREBASE
+            })
+            .catch(err => { 
+                hideLoading(); 
+                Swal.fire({icon:'error',title:'Gagal Menyimpan',text:err.message,confirmButtonColor:'#ef4444'}); 
+            });
         });
 
         function bukaDetail(id){
@@ -705,3 +729,7 @@
     </script>
 </body>
 </html>
+
+
+
+            
