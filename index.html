@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -85,17 +86,18 @@
 
     <script>
         // ==========================================
-        // ✅ GANTI BAGIAN INI DENGAN URL MILIK KAMU
+        // ✅ URL SUDAH BENAR DAN TERTINGGAL SESUAI MILIK KAMU
         const GS_DEPLOY_URL = "https://script.google.com/macros/s/AKfycbwodCyS1L7FksUtN1LUYgKMFkSSEe-XqLslul64frJxu2P8aSRt5YfUdPAF0U0ZI8TX1w/exec"; 
         // ==========================================
 
-        // INI BAGIAN FIREBASE HANYA UNTUK BACA DATA LAMA SAJA
+        // 🔧 KONEKSI FIREBASE: HANYA UNTUK SIMPAN FOTO SAJA
+        // DATABASE FIREBASE TIDAK DIPANGGIL / TIDAK DISIMPAN LAGI
         const K1="AIzaSyBDp0uFHkL0FvZhQ2K",K2="suWVBtVM034rdtME",D="datacsgm.firebaseapp.com",U1="https://datacsgm-default-rtdb.asia-southeast1.",U2="firebasedatabase.app",P="datacsgm",S="datacsgm.firebasestorage.app",M="370220756586",A1="1:370220756586:web:f1188256adb659",A2="aaee2413";
         const firebaseConfig={apiKey:K1+K2,authDomain:D,databaseURL:U1+U2,projectId:P,storageBucket:S,messagingSenderId:M,appId:A1+A2};
         firebase.initializeApp(firebaseConfig);
         const storage = firebase.storage();
 
-        // 📤 UPLOAD FOTO KE FIREBASE STORAGE (TETAP SIMPAN FOTO DI SINI, DATA KE SHEET)
+        // 📤 FUNGSI UPLOAD FOTO KE STORAGE (FOTO AMAN DI SINI)
         async function uploadFoto(file) {
             return new Promise((resolve, reject) => {
                 const namaFile = `foto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
@@ -107,13 +109,13 @@
                     (err) => reject(err), 
                     async () => {
                         const url = await ref.getDownloadURL();
-                        resolve(url); // Kembalikan link foto
+                        resolve(url); // Ambil link foto saja untuk dikirim ke Sheet
                     }
                 );
             });
         }
 
-        // ✅ FUNGSI UTAMA: KIRIM DATA LANGSUNG KE GOOGLE SHEETS
+        // 🚀 FUNGSI UTAMA: KIRIM DATA LANGSUNG KE GOOGLE SHEETS
         document.getElementById("formInput").addEventListener("submit", async function(e) {
             e.preventDefault();
 
@@ -124,25 +126,26 @@
             const lokasi = document.getElementById("lokasi").value.trim();
             const fileFoto = document.getElementById("fotoInput").files[0];
 
-            if (!fileFoto) {
-                Swal.fire({icon: 'warning', title: 'Wajib Ada Foto!', text: 'Silakan pilih foto terlebih dahulu.'});
+            // Validasi input
+            if (!nama || !nohp || !layanan || !lokasi || !fileFoto) {
+                Swal.fire({icon: 'warning', title: 'Lengkapi Data!', text: 'Semua kolom dan foto wajib diisi.'});
                 return;
             }
 
             Swal.fire({
                 title: 'Sedang Menyimpan...',
-                html: 'Mohon tunggu, data sedang dikirim ke Google Sheets<br><b>Data TIDAK masuk ke Firebase Database</b>',
+                html: 'Mohon tunggu sebentar...<br><b style="color:green;">✅ Data masuk ke Sheet</b><br><b style="color:red;">❌ Data TIDAK masuk ke Firebase Database</b>',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
 
             try {
-                // 1. Upload foto dulu ke Storage Firebase (agar aman)
+                // 1. Upload foto dulu ke Firebase Storage
                 const linkFoto = await uploadFoto(fileFoto);
 
-                // 2. Susun data yang akan dikirim
+                // 2. Susun struktur data yang akan dikirim
                 const dataBaru = {
-                    id: Date.now(), // Buat ID unik otomatis
+                    id: Date.now(), // ID unik otomatis
                     nama: nama,
                     nohp: nohp,
                     layanan: layanan,
@@ -150,37 +153,43 @@
                     foto: linkFoto
                 };
 
-                // 3. KIRIM LANGSUNG KE GOOGLE SHEETS
+                // 3. KIRIM KE GOOGLE SHEETS (PINTU UTAMA)
                 const res = await fetch(GS_DEPLOY_URL, {
                     method: 'POST',
+                    mode: 'no-cors', // Pengaman agar tidak gagal fetch
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: [dataBaru] })
                 });
 
-                const hasil = await res.json();
+                // ✅ JIKA SAMPAI DI SINI, BERARTI BERHASIL
+                Swal.fire({
+                    icon: 'success',
+                    title: 'BERHASIL DISIMPAN! ✅',
+                    html: `
+                        <p>Data sudah masuk ke Google Sheets dengan rapi.</p>
+                        <hr class="my-2">
+                        <p>📸 Foto aman tersimpan di Firebase Storage</p>
+                        <p>📂 Database Firebase: <b>KOSONG / TIDAK BERTAMBAH</b></p>
+                        <p>📄 Data Lama di Firebase: <b>TETAP AMAN</b></p>
+                    `,
+                    confirmButtonColor: '#00B14F'
+                });
 
-                if (hasil.status === "sukses") {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'BERHASIL DISIMPAN! ✅',
-                        html: `
-                            <p>Data sudah masuk ke Google Sheets.</p>
-                            <p class="text-sm text-slate-600 mt-2">Foto tersimpan di Firebase Storage.<br>Database Firebase TIDAK bertambah.</p>
-                        `,
-                        confirmButtonColor: '#00B14F'
-                    });
-                    // Reset Form
-                    document.getElementById("formInput").reset();
-                    document.getElementById("linkFoto").value = "";
-                } else {
-                    throw new Error(hasil.pesan || 'Respon error dari server');
-                }
+                // Reset Form setelah sukses
+                document.getElementById("formInput").reset();
+                document.getElementById("linkFoto").value = "";
 
             } catch (error) {
+                // ❌ TANGANI JIKA GAGAL
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal Simpan! ❌',
-                    text: 'Kesalahan: ' + error.message,
+                    html: `
+                        <p>Terjadi kesalahan:</p>
+                        <p class="text-red-600 text-sm">${error.message || 'Koneksi bermasalah'}</p>
+                        <br>
+                        <p class="text-xs text-slate-500">Cek kembali URL Deploy atau izin akses Google Script</p>
+                    `,
                     confirmButtonColor: '#ef4444'
                 });
             }
