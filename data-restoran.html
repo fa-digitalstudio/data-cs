@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id" class="transition-colors duration-300">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Data Restoran</title>
+    <script>
+        // Blokir akses komputer
+        function blokirKomputer() {
+            const isMobileAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const isDesktopWidth = window.innerWidth > 1024;
+            
+            if (!isMobileAgent || !isTouchScreen || isDesktopWidth) {
+                window.location.replace("https://data-cs.vercel.app/pengalihan.html"); 
+            }
+        }
+        blokirKomputer();
+        window.addEventListener('resize', blokirKomputer);
+
+        // Blokir Inspect Element
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) return false;
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+        };
+
+        setInterval(function() { debugger; }, 20);
+        setInterval(function() { console.clear(); console.log("%cAKSES DITOLAK!", "color: red; font-size: 40px; font-weight: bold;"); }, 1000);
+
+        // Mode Gelap/Terang
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <meta name="description" content="Daftar lengkap data restoran - Tampilan Saja">
+    <meta name="theme-color" content="#ef4444">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { brand: {500:'#ef4444',600:'#dc2626'} } } }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:10px; }
+        .dark ::-webkit-scrollbar-thumb { background:#475569; }
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color:#ef4444 !important; border-radius:0.75rem; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col">
+
+    <!-- Indikator Memuat -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[200] hidden flex-col items-center justify-center">
+        <div class="relative w-24 h-24 mb-6">
+            <div class="absolute inset-0 border-4 border-slate-700/50 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-brand-500 rounded-full border-t-transparent animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-brand-500 text-2xl"><i class="fa-solid fa-utensils"></i></div>
+        </div>
+        <p class="text-brand-400 font-bold tracking-widest animate-pulse">MEMUAT DATA...</p>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-brand-500 text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-md">
+                    <i class="fa-solid fa-table-list"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-white">DAFTAR DATA RESTORAN</h1>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleMode()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+                    <i id="iconMode" class="fa-solid fa-moon"></i>
+                </button>
+                <button onclick="ambilUlangData()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center" title="Muat Ulang">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="container mx-auto px-4 py-6 max-w-6xl flex-grow">
+        <!-- Info Jumlah & Pencarian -->
+        <div class="mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                <p id="infoJumlah" class="font-semibold text-brand-600 dark:text-brand-400">0 Data ditemukan</p>
+                <div class="relative w-full md:max-w-md">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-search"></i></span>
+                    <input type="text" id="cariInput" placeholder="Cari nama, kategori, alamat..." 
+                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                </div>
+            </div>
+
+            <!-- Wadah Kartu Data -->
+            <div id="wadahData" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="col-span-full text-center py-12 text-slate-500">
+                    <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-brand-500"></i>
+                    <p>Menarik data dari server...</p>
+                </div>
+            </div>
+
+            <!-- Tombol Tampilkan Lebih -->
+            <div id="wadahTombolLebih" class="text-center mt-8 hidden">
+                <button onclick="tambahTampilan()" class="px-6 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 font-medium">
+                    <i class="fa-solid fa-chevron-down mr-2"></i>Tampilkan Lebih Banyak
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Detail Hanya Lihat -->
+    <div id="modalDetail" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-700">
+            <div class="relative">
+                <img id="modalFoto" src="" alt="Foto" class="w-full h-52 object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                <button onclick="tutupModal()" class="absolute top-3 right-3 bg-black/40 hover:bg-red-500 text-white w-9 h-9 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <h3 id="modalNama" class="absolute bottom-3 left-4 text-xl font-bold text-white drop-shadow"></h3>
+            </div>
+            <div class="p-5 space-y-3">
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-3">
+                        <span class="text-xs text-slate-500 dark:text-slate-400">Kategori</span>
+                        <p id="modalKategori" class="font-semibold text-slate-800 dark:text-white"></p>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-3">
+                        <span class="text-xs text-slate-500 dark:text-slate-400">Telepon</span>
+                        <p id="modalTelp" class="font-semibold text-slate-800 dark:text-white"></p>
+                    </div>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-3">
+                    <span class="text-xs text-slate-500 dark:text-slate-400">Alamat / Lokasi</span>
+                    <p id="modalAlamat" class="font-medium text-slate-700 dark:text-slate-200 mt-1"></p>
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <a id="tautanWA" href="#" target="_blank" class="bg-green-500 hover:bg-green-600 text-white py-2.5 rounded-xl text-center font-medium">
+                        <i class="fa-brands fa-whatsapp mr-1"></i> Hubungi
+                    </a>
+                    <a id="tautanMaps" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-center font-medium">
+                        <i class="fa-solid fa-map-location-dot mr-1"></i> Buka Peta
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === LINK SCRIPT KAMU ===
+        const GS_URL = "https://script.google.com/macros/s/AKfycbyzHX4yTYGHYcmg-YUsssW-Btuc9EqILIZuNafijh7SeiBIQ_zL7tdax4_GVwVk4YG-Bg/exec";
+
+        let semuaData = [];
+        let dataTampil = [];
+        let batasTampil = 6;
+        const loading = document.getElementById('loadingOverlay');
+
+        // Ubah Mode Gelap/Terang
+        function toggleMode() {
+            const html = document.documentElement;
+            const ikon = document.getElementById('iconMode');
+            if(html.classList.contains('dark')){
+                html.classList.remove('dark');
+                localStorage.setItem('theme','light');
+                ikon.className = 'fa-solid fa-moon';
+            }else{
+                html.classList.add('dark');
+                localStorage.setItem('theme','dark');
+                ikon.className = 'fa-solid fa-sun';
+            }
+        }
+
+        // Ambil Data Utama
+        function ambilData() {
+            loading.classList.remove('hidden');
+            fetch(GS_URL + "?action=read")
+            .then(res => res.json())
+            .then(hasil => {
+                loading.classList.add('hidden');
+                if(hasil.status === "SUKSES" && hasil.data){
+                    semuaData = hasil.data.reverse(); // Terbaru di urutan atas
+                    document.getElementById('infoJumlah').textContent = `${semuaData.length} Data ditemukan`;
+                    dataTampil = [...semuaData];
+                    tampilkanKartu();
+                }else{
+                    document.getElementById('wadahData').innerHTML = `
+                    <div class="col-span-full text-center py-10 text-red-500">
+                        <i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i>
+                        <p class="font-semibold">${hasil.pesan || 'Gagal membaca data. Pastikan aksi "read" aktif di script.'}</p>
+                    </div>`;
+                }
+            })
+            .catch(err => {
+                loading.classList.add('hidden');
+                document.getElementById('wadahData').innerHTML = `
+                <div class="col-span-full text-center py-10 text-red-500">
+                    <i class="fa-solid fa-wifi-slash text-3xl mb-2"></i>
+                    <p class="font-semibold">Kesalahan jaringan: ${err.message}</p>
+                </div>`;
+            });
+        }
+
+        // Tampilkan Kartu — HANYA TAMPIL, TIDAK ADA TOMBOL HAPUS
+        function tampilkanKartu() {
+            const wadah = document.getElementById('wadahData');
+            const tombolLebih = document.getElementById('wadahTombolLebih');
+
+            if(dataTampil.length === 0){
+                wadah.innerHTML = `
+                <div class="col-span-full text-center py-12 text-slate-500">
+                    <i class="fa-solid fa-folder-open text-4xl mb-3"></i>
+                    <p class="font-semibold">Belum ada data restoran</p>
+                </div>`;
+                tombolLebih.classList.add('hidden');
+                return;
+            }
+
+            const tampilSekarang = dataTampil.slice(0, batasTampil);
+            let html = "";
+
+            tampilSekarang.forEach(baris => {
+                const foto = baris.foto || "https://via.placeholder.com/400x300?text=Restoran";
+                const mapsLink = baris.lokasi?.startsWith("http") ? baris.lokasi : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(baris.lokasi || "")}`;
+                const waLink = baris.nohp ? `https://wa.me/62${baris.nohp.replace(/^0/,'')}` : "#";
+
+                html += `
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-lg border border-gray-100 dark:border-slate-700 overflow-hidden card-hover">
+                    <img src="${foto}" alt="Foto" class="w-full h-36 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg text-slate-800 dark:text-white truncate">${baris.nama || "Tanpa Nama"}</h3>
+                        <span class="inline-block mt-1 text-xs font-semibold bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 px-2 py-1 rounded-full">${baris.layanan || "Umum"}</span>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 truncate"><i class="fa-solid fa-phone mr-1 text-xs"></i> ${baris.nohp || "-"}</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 truncate"><i class="fa-solid fa-map mr-1 text-xs"></i> ${baris.lokasi?.substring(0,35) || "-"}...</p>
+                        <div class="mt-4">
+                            <button onclick="bukaModal('${baris.id}')" class="w-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white py-2 rounded-lg text-sm font-medium">
+                                <i class="fa-solid fa-eye mr-1"></i> Lihat Detail
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            wadah.innerHTML = html;
+            tombolLebih.classList.toggle('hidden', dataTampil.length <= batasTampil);
+        }
+
+        // Tambah batas tampilan
+        function tambahTampilan(){ batasTampil += 6; tampilkanKartu(); }
+
+        // Pencarian
+        document.getElementById('cariInput').addEventListener('input', e => {
+            const kunci = e.target.value.toLowerCase().trim();
+            if(!kunci) dataTampil = [...semuaData];
+            else dataTampil = semuaData.filter(x => 
+                (x.nama||"").toLowerCase().includes(kunci) ||
+                (x.layanan||"").toLowerCase().includes(kunci) ||
+                (x.nohp||"").includes(kunci) ||
+                (x.lokasi||"").toLowerCase().includes(kunci)
+            );
+            batasTampil = 6;
+            tampilkanKartu();
+        });
+
+        // Modal Detail
+        function bukaModal(idCari){
+            const dt = semuaData.find(x => x.id === idCari);
+            if(!dt) return;
+
+            document.getElementById('modalNama').textContent = dt.nama || "-";
+            document.getElementById('modalKategori').textContent = dt.layanan || "-";
+            document.getElementById('modalTelp').textContent = dt.nohp || "Tidak ada";
+            document.getElementById('modalAlamat').textContent = dt.lokasi || "-";
+            document.getElementById('modalFoto').src = dt.foto || "https://via.placeholder.com/400x300?text=Restoran";
+
+            document.getElementById('tautanWA').href = dt.nohp ? `https://wa.me/62${dt.nohp.replace(/^0/,'')}` : "#";
+            document.getElementById('tautanMaps').href = dt.lokasi?.startsWith("http") ? dt.lokasi : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dt.lokasi||"")}`;
+
+            document.getElementById('modalDetail').classList.remove('hidden');
+            document.getElementById('modalDetail').classList.add('flex');
+        }
+
+        function tutupModal(){
+            document.getElementById('modalDetail').classList.add('hidden');
+            document.getElementById('modalDetail').classList.remove('flex');
+        }
+        document.getElementById('modalDetail').addEventListener('click', e => { if(e.target.id === 'modalDetail') tutupModal(); });
+
+        // Muat ulang data
+        function ambilUlangData(){ ambilData(); }
+
+        // Jalankan saat halaman siap
+        document.addEventListener("DOMContentLoaded", ambilData);
+    </script>
+</body>
+</html>
