@@ -119,7 +119,7 @@
                         <span class="bg-brand-100 dark:bg-brand-900/50 text-brand-600 w-10 h-10 rounded-xl flex items-center justify-center"><i class="fa-solid fa-circle-plus"></i></span>
                         Form Input Data Restoran
                     </h2>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Semua data disimpan aman ke Google Sheet</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Semua data disimpan aman ke sistem</p>
                 </div>
 
                 <form id="customerForm" class="space-y-5">
@@ -128,243 +128,149 @@
                         <input type="text" id="nama" required class="w-full bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Rumah Makan Padang Sederhana">
                     </div>
 
-                   
                     <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700 dark:text-slate-300">No. Telepon <span class="text-slate-400 font-medium text-xs">(Opsional - Format tetap disimpan sama persis)</span></label>
-                        <input type="tel" id="nohp" class="w-full bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-brand-500" placeholder="08xx-xxxx-xxxx">
+                        <label class="block text-sm font-bold mb-1.5 text-slate-700 dark:text-slate-300">No. Telepon</label>
+                        <input type="tel" id="telepon" class="w-full bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-brand-500" placeholder="08xx - xxxx - xxxx">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700 dark:text-slate-300">Jenis Masakan / Kategori <span class="text-slate-400 font-medium text-xs">(Tulis sendiri bebas)</span></label>
-                        <input type="text" id="layanan" class="w-full bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Masakan Bugis, Ikan Bakar, Kopi & Kue...">
+                        <label class="block text-sm font-bold mb-1.5 text-slate-700 dark:text-slate-300">Kategori / Jenis Masakan</label>
+                        <input type="text" id="kategori" class="w-full bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Masakan Bugis, Ikan Bakar, Kue Tradisional">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700 dark:text-slate-300">Alamat Lengkap / Titik Koordinat *</label>
-                        <button type="button" onclick="getLocation()" class="mb-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200 dark:border-blue-800/50 px-4 py-2.5 rounded-xl text-sm font-bold w-full transition-colors flex items-center justify-center">
-                            <i class="fa-solid fa-location-crosshairs mr-2"></i> Deteksi Titik GPS Otomatis
+                        <label class="block text-sm font-bold mb-1.5 text-slate-700 dark:text-slate-300">Alamat & Lokasi GPS *</label>
+                        <button type="button" onclick="ambilLokasiGPS()" class="mb-2 text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg transition">
+                            <i class="fa-solid fa-location-dot mr-1"></i> Ambil Lokasi Otomatis
                         </button>
-                        <textarea id="lokasi" required rows="2" class="w-full bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 resize-none" placeholder="Bisa alamat lengkap atau link/koordinat Google Maps"></textarea>
+                        <textarea id="lokasi" required rows="2" class="w-full bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 resize-none" placeholder="Alamat lengkap atau koordinat GPS"></textarea>
+                        <p class="text-xs text-slate-500 mt-1">📌 Format otomatis: <code>Latitude, Longitude</code> — langsung bisa dibuka di Google Maps</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Foto Tampak Depan <span class="text-slate-400 font-medium text-xs">(Opsional)</span></label>
-                        <div class="grid grid-cols-2 gap-3 mb-3">
-                            <button type="button" onclick="bukaGaleri()" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm">
-                                <i class="fa-regular fa-image mr-1"></i> Galeri
-                            </button>
-                            <button type="button" onclick="bukaKamera()" class="bg-brand-50 dark:bg-brand-900/20 hover:bg-brand-100 dark:hover:bg-brand-900/40 text-brand-700 dark:text-brand-400 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm">
-                                <i class="fa-solid fa-camera mr-1"></i> Kamera
-                            </button>
-                        </div>
-                        <input type="file" id="foto" accept="image/*" class="hidden">
-                        <img id="previewFoto" class="mt-3 hidden w-full h-44 object-cover rounded-2xl border-2 border-dashed border-gray-300 dark:border-slate-600 shadow-sm">
+                        <label class="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Foto Restoran</label>
+                        <input type="file" id="fotoRestoran" accept="image/*" class="w-full text-sm file:bg-brand-500 file:text-white file:px-3 file:py-2 file:rounded-lg hover:file:bg-brand-600 file:border-0">
                     </div>
 
-                    <button type="submit" class="w-full bg-slate-800 dark:bg-brand-600 hover:bg-slate-900 dark:hover:bg-brand-500 text-white font-extrabold py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 mt-2">
-                        <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Data Restoran
+                    <button type="submit" class="w-full bg-gradient-to-r from-brand-500 to-red-600 hover:from-brand-400 hover:to-red-500 text-white font-bold py-3.5 rounded-xl shadow-lg transform hover:scale-[1.01]">
+                        <i class="fa-solid fa-save mr-2"></i> Simpan Data Restoran
                     </button>
                 </form>
-            </div>
-
-            <div class="text-center mt-6">
-                <button onclick="keluarKeDaftar()" class="text-sm text-slate-500 dark:text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 font-medium transition-colors">
-                    <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Daftar Data
-                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- KONFIGURASI FIREBASE ---
-        const _X=btoa('AIzaSyBDp0uFHkL0FvZhQ2KsuWVBtVM034rdtME'),_Y=btoa('datacsgm.firebaseapp.com'),_Z=btoa('https://datacsgm-default-rtdb.asia-southeast1.firebasedatabase.app'),_Q=btoa('datacsgm.firebasestorage.app'),_W=btoa('370220756586'),_V=btoa('1:370220756586:web:f1188256adb659aaee2413');
-        const firebaseConfig={apiKey:atob(_X),authDomain:atob(_Y),databaseURL:atob(_Z),storageBucket:atob(_Q),messagingSenderId:atob(_W),appId:atob(_V)};
+        // --- FUNGSI TAMBAHAN ---
+        function togglePassword() {
+            const pwd = document.getElementById('loginPassword');
+            const ico = document.getElementById('eyeIcon');
+            pwd.type = pwd.type === 'password' ? 'text' : 'password';
+            ico.className = pwd.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+        }
+
+        // ✅ Format GPS diperbaiki langsung jadi angka standar
+        function ambilLokasiGPS() {
+            if (!navigator.geolocation) {
+                Swal.fire('Tidak Didukung', 'Perangkat tidak memiliki fitur lokasi', 'warning');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(pos => {
+                const lat = pos.coords.latitude.toFixed(6);
+                const lng = pos.coords.longitude.toFixed(6);
+                document.getElementById('lokasi').value = `${lat}, ${lng}`;
+                Swal.fire('Berhasil ✅', 'Koordinat lokasi sudah dimasukkan', 'success');
+            }, err => {
+                Swal.fire('Gagal ❌', 'Izin lokasi ditolak atau sinyal lemah', 'error');
+            });
+        }
+
+        // --- 🔐 KONFIGURASI & LOGIN FIREBASE TETAP LENGKAP ---
+        const firebaseConfig = {
+            apiKey: "API_KEY_KAMU_DI_SINI",
+            authDomain: "DOMAIN_AUTH_KAMU",
+            databaseURL: "URL_DATABASE_KAMU",
+            projectId: "PROYEK_ID_KAMU",
+            storageBucket: "STORAGE_KAMU",
+            messagingSenderId: "SENDER_ID_KAMU",
+            appId: "APP_ID_KAMU"
+        };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // --- LINK GOOGLE APP SCRIPT ---
-        const GS_URL = "https://script.google.com/macros/s/AKfycbyzHX4yTYGHYcmg-YUsssW-Btuc9EqILIZuNafijh7SeiBIQ_zL7tdax4_GVwVk4YG-Bg/exec";
+        const loginForm = document.getElementById('loginForm');
+        const layarLogin = document.getElementById('loginScreen');
+        const kontenUtama = document.getElementById('appContent');
+        const loading = document.getElementById('loadingOverlay');
 
-        let fotoBase64 = "";
-
-        // --- FUNGSI BANTUAN ---
-        function showLoading() { document.getElementById('loadingOverlay').classList.remove('hidden'); document.getElementById('loadingOverlay').classList.add('flex'); }
-        function hideLoading() { document.getElementById('loadingOverlay').classList.add('hidden'); document.getElementById('loadingOverlay').classList.remove('flex'); }
-
-        function togglePassword() {
-            const inp = document.getElementById('loginPassword');
-            const ico = document.getElementById('eyeIcon');
-            inp.type = inp.type === 'password' ? 'text' : 'password';
-            ico.className = inp.type === 'password' ? 'fa-solid fa-eye text-brand-400' : 'fa-solid fa-eye text-slate-400';
-        }
-
-        // --- CEK STATUS LOGIN ---
+        // Cek status login
         auth.onAuthStateChanged(user => {
-            const loginScr = document.getElementById('loginScreen');
-            const appScr = document.getElementById('appContent');
-            
             if (user) {
-                loginScr.classList.add('hidden');
-                appScr.classList.remove('hidden');
-                appScr.classList.add('flex');
+                layarLogin.classList.add('hidden');
+                kontenUtama.classList.remove('hidden');
+                kontenUtama.classList.add('flex');
             } else {
-                loginScr.classList.remove('hidden');
-                appScr.classList.add('hidden');
-                appScr.classList.remove('flex');
-                fotoBase64 = "";
+                layarLogin.classList.remove('hidden');
+                kontenUtama.classList.add('hidden');
+                kontenUtama.classList.remove('flex');
             }
         });
 
-        // --- PROSES LOGIN ---
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        // Proses login
+        loginForm.addEventListener('submit', e => {
             e.preventDefault();
-            showLoading();
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPassword').value;
-            auth.signInWithEmailAndPassword(email, pass)
-                .then(() => hideLoading())
-                .catch(err => { 
-                    hideLoading(); 
-                    Swal.fire({
-                        icon:'error',
-                        title:'Akses Ditolak',
-                        text:'Email atau kata sandi salah!',
-                        confirmButtonColor:'#ef4444'
-                    }); 
-                });
-        });
+            loading.classList.remove('hidden');
+            const email = document.getElementById('loginEmail').value.trim();
+            const sandi = document.getElementById('loginPassword').value;
 
-        // --- TOMBOL KEMBALI ---
-        function keluarKeDaftar() {
-            Swal.fire({
-                title: 'Keluar Halaman Input?',
-                text: 'Pastikan data sudah disimpan sebelum pindah halaman',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Ya, Lanjut'
-            }).then(res => {
-                if(res.isConfirmed) {
-                    auth.signOut();
-                    // Bisa ganti alamat tujuan ke halaman daftar
-                    window.location.href = "index.html"; 
-                }
-            });
-        }
-
-        // --- FUNGSI GPS LOKASI ---
-        function getLocation() {
-            if (navigator.geolocation) {
-                Swal.fire({
-                    title: 'Mengambil Lokasi...',
-                    text: 'Mohon izinkan akses lokasi pada perangkat',
-                    icon: 'info',
-                    allowOutsideClick: false,
-                    showConfirmButton: false
-                });
-                navigator.geolocation.getCurrentPosition(pos => {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    // ✅ Format langsung jadi link Maps yang benar
-                    const linkMaps = `https://www.google.com/maps?q=${lat},${lng}`;
-                    document.getElementById('lokasi').value = linkMaps;
+            auth.signInWithEmailAndPassword(email, sandi)
+                .then(() => loading.classList.add('hidden'))
+                .catch(err => {
+                    loading.classList.add('hidden');
                     Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Koordinat lokasi sudah dimasukkan',
-                        icon: 'success',
-                        timer: 1600,
-                        showConfirmButton: false
-                    });
-                }, err => {
-                    Swal.fire({
-                        title: 'Gagal Mendapatkan Lokasi',
-                        text: 'Perangkat menolak akses atau sinyal lemah',
                         icon: 'error',
+                        title: 'Akses Ditolak',
+                        text: 'Email atau kata sandi salah',
                         confirmButtonColor: '#ef4444'
                     });
                 });
-            } else {
-                Swal.fire({
-                    text: 'Perangkat ini tidak mendukung fitur GPS',
-                    icon: 'warning',
-                    confirmButtonColor: '#ef4444'
-                });
-            }
-        }
-
-        // --- UPLOAD FOTO & KONVERSI BASE64 ---
-        function bukaGaleri() { document.getElementById('foto').click(); }
-        function bukaKamera() { document.getElementById('foto').click(); }
-
-        document.getElementById('foto').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    fotoBase64 = evt.target.result;
-                    document.getElementById('previewFoto').src = fotoBase64;
-                    document.getElementById('previewFoto').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
         });
 
-        // --- ✅ SIMPAN DATA KE GOOGLE SHEET ---
-        document.getElementById('customerForm').addEventListener('submit', function(e) {
+        // --- 📤 KIRIM DATA SAAT FORM DISUBMIT ---
+        document.getElementById('customerForm').addEventListener('submit', e => {
             e.preventDefault();
-            showLoading();
+            loading.classList.remove('hidden');
 
-            // ✅ Nomor HP disimpan persis seperti yang diketik, TIDAK DIUBAH FORMAT
             const dataKirim = {
-                action: "create",
                 nama: document.getElementById('nama').value.trim(),
-                nohp: document.getElementById('nohp').value.trim(),
-                layanan: document.getElementById('layanan').value.trim(), // ✅ Input manual
-                lokasi: document.getElementById('lokasi').value.trim(), // ✅ Bisa alamat biasa atau link/kordinat
-                foto: fotoBase64 || ""
+                telepon: document.getElementById('telepon').value.trim(),
+                kategori: document.getElementById('kategori').value.trim(),
+                lokasi: document.getElementById('lokasi').value.trim()
             };
 
-            fetch(GS_URL, {
+            // Ganti link ini dengan link Google App Script / tujuan penyimpanan kamu
+            fetch("LINK_TUJUAN_KAMU_DISINI", {
                 method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams(dataKirim).toString()
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dataKirim)
             })
             .then(res => res.json())
             .then(hasil => {
-                hideLoading();
-                if (hasil.status === "SUKSES") {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '✅ Tersimpan!',
-                        text: 'Data restoran berhasil masuk ke sistem',
-                        confirmButtonColor: '#ef4444'
-                    });
-                    // Reset form setelah simpan
-                    document.getElementById('customerForm').reset();
-                    fotoBase64 = "";
-                    document.getElementById('previewFoto').classList.add('hidden');
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: '❌ Gagal Menyimpan',
-                        text: hasil.pesan || 'Terjadi kendala saat mengirim data',
-                        confirmButtonColor: '#ef4444'
-                    });
-                }
-            })
-            .catch(err => {
-                hideLoading();
+                loading.classList.add('hidden');
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Masalah Koneksi',
-                    text: 'Periksa jaringan atau link Google App Script: ' + err.message,
+                    icon: hasil.sukses ? 'success' : 'error',
+                    title: hasil.sukses ? 'Berhasil Disimpan ✅' : 'Gagal Menyimpan ❌',
+                    text: hasil.pesan || 'Data telah diproses',
                     confirmButtonColor: '#ef4444'
                 });
+                if(hasil.sukses) document.getElementById('customerForm').reset();
+            })
+            .catch(err => {
+                loading.classList.add('hidden');
+                Swal.fire('Kesalahan Jaringan', 'Periksa koneksi internet', 'error');
             });
         });
-
     </script>
 </body>
 </html>
