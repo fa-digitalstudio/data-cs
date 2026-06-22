@@ -47,8 +47,6 @@
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -72,46 +70,8 @@
         <p class="text-brand-400 font-bold tracking-widest animate-pulse">MEMPROSES...</p>
     </div>
 
-    <!-- LAYAR LOGIN -->
-    <div id="loginScreen" class="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-red-900 z-[100] flex items-center justify-center p-4">
-        <div class="bg-white/10 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-2xl w-full max-w-md p-8 relative overflow-hidden">
-            <div class="absolute top-[-50px] right-[-50px] w-32 h-32 bg-brand-500 rounded-full blur-[60px] opacity-40"></div>
-            <div class="absolute bottom-[-50px] left-[-50px] w-32 h-32 bg-orange-500 rounded-full blur-[60px] opacity-30"></div>
-            
-            <div class="text-center mb-8 relative z-10">
-                <div class="bg-gradient-to-br from-brand-400 to-brand-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white text-3xl shadow-lg transform rotate-3">
-                    <i class="fa-solid fa-shield-halved -rotate-3"></i>
-                </div>
-                <h3 class="text-3xl font-extrabold text-white">Akses Admin</h3>
-                <p class="text-slate-300 text-sm mt-2">Hanya petugas berwenang</p>
-            </div>
-            <form id="loginForm" class="space-y-5 relative z-10">
-                <div>
-                    <label class="block text-sm font-bold mb-2 text-slate-200">Email</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400"><i class="fa-solid fa-envelope"></i></span>
-                        <input type="email" id="loginEmail" required class="w-full bg-slate-800/50 border border-slate-600/50 text-white rounded-xl pl-11 pr-4 py-3.5 focus:ring-2 focus:ring-brand-500" placeholder="admin@email.com">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-2 text-slate-200">Kata Sandi</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400"><i class="fa-solid fa-lock"></i></span>
-                        <input type="password" id="loginPassword" required class="w-full bg-slate-800/50 border border-slate-600/50 text-white rounded-xl pl-11 pr-12 py-3.5 focus:ring-2 focus:ring-brand-500" placeholder="••••••••">
-                        <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 px-4 text-slate-400 hover:text-white">
-                            <i id="eyeIcon" class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                <button type="submit" class="w-full bg-gradient-to-r from-brand-500 to-red-600 hover:from-brand-400 hover:to-red-500 text-white font-bold py-4 rounded-xl shadow-lg transform hover:scale-[1.02]">
-                    <i class="fa-solid fa-right-to-bracket mr-2"></i> Masuk Sistem
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- ISI FORM INPUT -->
-    <div id="appContent" class="hidden items-center justify-center min-h-screen p-4">
+    <!-- ISI FORM INPUT - LANGSUNG MUNCUL TANPA LAYAR LOGIN -->
+    <div id="appContent" class="flex items-center justify-center min-h-screen p-4">
         <div class="w-full max-w-lg">
             <div class="bg-white dark:bg-slate-800 rounded-[1.5rem] shadow-xl p-6 border border-gray-100 dark:border-slate-700">
                 <div class="text-center mb-6">
@@ -150,6 +110,7 @@
                     <div>
                         <label class="block text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">Foto Restoran</label>
                         <input type="file" id="fotoRestoran" accept="image/*" class="w-full text-sm file:bg-brand-500 file:text-white file:px-3 file:py-2 file:rounded-lg hover:file:bg-brand-600 file:border-0">
+                        <img id="previewFoto" class="mt-3 hidden w-full h-44 object-cover rounded-2xl border-2 border-dashed border-gray-300 dark:border-slate-600 shadow-sm">
                     </div>
 
                     <button type="submit" class="w-full bg-gradient-to-r from-brand-500 to-red-600 hover:from-brand-400 hover:to-red-500 text-white font-bold py-3.5 rounded-xl shadow-lg transform hover:scale-[1.01]">
@@ -161,13 +122,8 @@
     </div>
 
     <script>
-        // --- FUNGSI TAMBAHAN ---
-        function togglePassword() {
-            const pwd = document.getElementById('loginPassword');
-            const ico = document.getElementById('eyeIcon');
-            pwd.type = pwd.type === 'password' ? 'text' : 'password';
-            ico.className = pwd.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
-        }
+        let fotoBase64 = "";
+        const loading = document.getElementById('loadingOverlay');
 
         // ✅ Format GPS diperbaiki langsung jadi angka standar
         function ambilLokasiGPS() {
@@ -185,56 +141,18 @@
             });
         }
 
-        // --- 🔐 KONFIGURASI & LOGIN FIREBASE TETAP LENGKAP ---
-        const firebaseConfig = {
-            apiKey: "API_KEY_KAMU_DI_SINI",
-            authDomain: "DOMAIN_AUTH_KAMU",
-            databaseURL: "URL_DATABASE_KAMU",
-            projectId: "PROYEK_ID_KAMU",
-            storageBucket: "STORAGE_KAMU",
-            messagingSenderId: "SENDER_ID_KAMU",
-            appId: "APP_ID_KAMU"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
-        const loginForm = document.getElementById('loginForm');
-        const layarLogin = document.getElementById('loginScreen');
-        const kontenUtama = document.getElementById('appContent');
-        const loading = document.getElementById('loadingOverlay');
-
-        // Cek status login
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                layarLogin.classList.add('hidden');
-                kontenUtama.classList.remove('hidden');
-                kontenUtama.classList.add('flex');
-            } else {
-                layarLogin.classList.remove('hidden');
-                kontenUtama.classList.add('hidden');
-                kontenUtama.classList.remove('flex');
+        // ✅ Pratinjau Foto
+        document.getElementById('fotoRestoran').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    fotoBase64 = evt.target.result;
+                    document.getElementById('previewFoto').src = fotoBase64;
+                    document.getElementById('previewFoto').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
             }
-        });
-
-        // Proses login
-        loginForm.addEventListener('submit', e => {
-            e.preventDefault();
-            loading.classList.remove('hidden');
-            const email = document.getElementById('loginEmail').value.trim();
-            const sandi = document.getElementById('loginPassword').value;
-
-            auth.signInWithEmailAndPassword(email, sandi)
-                .then(() => loading.classList.add('hidden'))
-                .catch(err => {
-                    loading.classList.add('hidden');
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Akses Ditolak',
-                        text: 'Email atau kata sandi salah',
-                        confirmButtonColor: '#ef4444'
-                    });
-                });
         });
 
         // --- 📤 KIRIM DATA SAAT FORM DISUBMIT ---
@@ -246,29 +164,34 @@
                 nama: document.getElementById('nama').value.trim(),
                 telepon: document.getElementById('telepon').value.trim(),
                 kategori: document.getElementById('kategori').value.trim(),
-                lokasi: document.getElementById('lokasi').value.trim()
+                lokasi: document.getElementById('lokasi').value.trim(),
+                foto: fotoBase64
             };
 
             // Ganti link ini dengan link Google App Script / tujuan penyimpanan kamu
-            fetch("LINK_TUJUAN_KAMU_DISINI", {
+            fetch("LINK_GOOGLE_APPSCRIPT_KAMU_DISINI", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(dataKirim)
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(dataKirim).toString()
             })
             .then(res => res.json())
             .then(hasil => {
                 loading.classList.add('hidden');
                 Swal.fire({
-                    icon: hasil.sukses ? 'success' : 'error',
-                    title: hasil.sukses ? 'Berhasil Disimpan ✅' : 'Gagal Menyimpan ❌',
+                    icon: hasil.status === "SUKSES" ? 'success' : 'error',
+                    title: hasil.status === "SUKSES" ? 'Berhasil Disimpan ✅' : 'Gagal Menyimpan ❌',
                     text: hasil.pesan || 'Data telah diproses',
                     confirmButtonColor: '#ef4444'
                 });
-                if(hasil.sukses) document.getElementById('customerForm').reset();
+                if(hasil.status === "SUKSES") {
+                    document.getElementById('customerForm').reset();
+                    fotoBase64 = "";
+                    document.getElementById('previewFoto').classList.add('hidden');
+                }
             })
             .catch(err => {
                 loading.classList.add('hidden');
-                Swal.fire('Kesalahan Jaringan', 'Periksa koneksi internet', 'error');
+                Swal.fire('Kesalahan Jaringan', 'Periksa koneksi internet atau link tujuan', 'error');
             });
         });
     </script>
