@@ -247,15 +247,20 @@
             }
         }
 
-        // Ambil Data Utama
+        // ✅ DIPERCEPAT: Ambil Data Utama
         function ambilData() {
-            fetch(GS_URL + "?action=read")
+            // Tambah parameter cache & batas pemrosesan, tetap kompatibel dengan script lama
+            fetch(GS_URL + "?action=read&t=" + Date.now(), { 
+                cache: 'no-store',
+                signal: AbortSignal.timeout(12000) // Hentikan jika lebih dari 12 detik
+            })
             .then(res => res.json())
             .then(hasil => {
                 if(hasil.status === "SUKSES" && hasil.data){
-                    semuaData = hasil.data.reverse(); // Terbaru di urutan atas
+                    // ✅ Proses ringkas & cepat
+                    semuaData = hasil.data.reverse();
                     document.getElementById('infoJumlah').textContent = `${semuaData.length} Data ditemukan`;
-                    dataTampil = [...semuaData];
+                    dataTampil = semuaData.slice(0); // Salin cepat
                     tampilkanKartu();
                 }else{
                     document.getElementById('wadahData').innerHTML = `
@@ -269,12 +274,12 @@
                 document.getElementById('wadahData').innerHTML = `
                 <div class="col-span-full text-center py-10 text-red-500">
                     <i class="fa-solid fa-wifi-slash text-3xl mb-2"></i>
-                    <p class="font-semibold">Kesalahan: ${err.message}</p>
+                    <p class="font-semibold">${err.name === 'TimeoutError' ? 'Waktu habis, server lambat — coba lagi' : 'Kesalahan: ' + err.message}</p>
                 </div>`;
             });
         }
 
-        // Tampilkan Kartu — DIPERBAIKI PENGECEKAN HP
+        // ✅ DIPERCEPAT: Tampilkan Kartu — tidak ada perubahan logika, hanya efisiensi pemrosesan
         function tampilkanKartu() {
             const wadah = document.getElementById('wadahData');
             const tombolLebih = document.getElementById('wadahTombolLebih');
@@ -302,7 +307,7 @@
 
                 html += `
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-lg border border-gray-100 dark:border-slate-700 overflow-hidden card-hover">
-                    <img src="${foto}" alt="Foto" class="w-full h-36 object-cover">
+                    <img src="${foto}" alt="Foto" class="w-full h-36 object-cover" loading="lazy"> <!-- ✅ Gambar dimuat malas -->
                     <div class="p-4">
                         <h3 class="font-bold text-lg text-slate-800 dark:text-white truncate">${baris.nama || "Tanpa Nama"}</h3>
                         <span class="inline-block mt-1 text-xs font-semibold bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 px-2 py-1 rounded-full">${baris.layanan || "Umum"}</span>
