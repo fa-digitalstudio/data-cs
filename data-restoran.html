@@ -169,6 +169,12 @@
         let batasTampil = 6;
         const loading = document.getElementById('loadingOverlay');
 
+        // --- FUNGSI BANTUAN AMAN UNTUK NOMOR HP ---
+        function ambilNomorTeks(nilai) {
+            // Ubah jadi teks dulu, jika kosong isi string kosong
+            return nilai === null || nilai === undefined ? "" : String(nilai).trim();
+        }
+
         // Ubah Mode Gelap/Terang
         function toggleMode() {
             const html = document.documentElement;
@@ -200,7 +206,7 @@
                     document.getElementById('wadahData').innerHTML = `
                     <div class="col-span-full text-center py-10 text-red-500">
                         <i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i>
-                        <p class="font-semibold">${hasil.pesan || 'Gagal membaca data. Pastikan aksi "read" aktif di script.'}</p>
+                        <p class="font-semibold">${hasil.pesan || 'Gagal membaca data.'}</p>
                     </div>`;
                 }
             })
@@ -209,12 +215,12 @@
                 document.getElementById('wadahData').innerHTML = `
                 <div class="col-span-full text-center py-10 text-red-500">
                     <i class="fa-solid fa-wifi-slash text-3xl mb-2"></i>
-                    <p class="font-semibold">Kesalahan jaringan: ${err.message}</p>
+                    <p class="font-semibold">Kesalahan: ${err.message}</p>
                 </div>`;
             });
         }
 
-        // Tampilkan Kartu — HANYA TAMPIL, TIDAK ADA TOMBOL HAPUS
+        // Tampilkan Kartu — DIPERBAIKI PENGECEKAN HP
         function tampilkanKartu() {
             const wadah = document.getElementById('wadahData');
             const tombolLebih = document.getElementById('wadahTombolLebih');
@@ -235,7 +241,10 @@
             tampilSekarang.forEach(baris => {
                 const foto = baris.foto || "https://via.placeholder.com/400x300?text=Restoran";
                 const mapsLink = baris.lokasi?.startsWith("http") ? baris.lokasi : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(baris.lokasi || "")}`;
-                const waLink = baris.nohp ? `https://wa.me/62${baris.nohp.replace(/^0/,'')}` : "#";
+                
+                // ✅ AMAN: Ubah jadi teks dulu baru proses
+                const nohpTeks = ambilNomorTeks(baris.nohp);
+                const waLink = nohpTeks ? `https://wa.me/62${nohpTeks.replace(/^0/,'')}` : "#";
 
                 html += `
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-lg border border-gray-100 dark:border-slate-700 overflow-hidden card-hover">
@@ -243,8 +252,8 @@
                     <div class="p-4">
                         <h3 class="font-bold text-lg text-slate-800 dark:text-white truncate">${baris.nama || "Tanpa Nama"}</h3>
                         <span class="inline-block mt-1 text-xs font-semibold bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 px-2 py-1 rounded-full">${baris.layanan || "Umum"}</span>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 truncate"><i class="fa-solid fa-phone mr-1 text-xs"></i> ${baris.nohp || "-"}</p>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 truncate"><i class="fa-solid fa-map mr-1 text-xs"></i> ${baris.lokasi?.substring(0,35) || "-"}...</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 truncate"><i class="fa-solid fa-phone mr-1 text-xs"></i> ${nohpTeks || "-"}</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 truncate"><i class="fa-solid fa-map mr-1 text-xs"></i> ${(baris.lokasi||"").substring(0,35) || "-"}...</p>
                         <div class="mt-4">
                             <button onclick="bukaModal('${baris.id}')" class="w-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white py-2 rounded-lg text-sm font-medium">
                                 <i class="fa-solid fa-eye mr-1"></i> Lihat Detail
@@ -268,25 +277,27 @@
             else dataTampil = semuaData.filter(x => 
                 (x.nama||"").toLowerCase().includes(kunci) ||
                 (x.layanan||"").toLowerCase().includes(kunci) ||
-                (x.nohp||"").includes(kunci) ||
+                ambilNomorTeks(x.nohp).includes(kunci) ||
                 (x.lokasi||"").toLowerCase().includes(kunci)
             );
             batasTampil = 6;
             tampilkanKartu();
         });
 
-        // Modal Detail
+        // Modal Detail — DIPERBAIKI
         function bukaModal(idCari){
             const dt = semuaData.find(x => x.id === idCari);
             if(!dt) return;
 
+            const nohpTeks = ambilNomorTeks(dt.nohp);
+
             document.getElementById('modalNama').textContent = dt.nama || "-";
             document.getElementById('modalKategori').textContent = dt.layanan || "-";
-            document.getElementById('modalTelp').textContent = dt.nohp || "Tidak ada";
+            document.getElementById('modalTelp').textContent = nohpTeks || "Tidak ada";
             document.getElementById('modalAlamat').textContent = dt.lokasi || "-";
             document.getElementById('modalFoto').src = dt.foto || "https://via.placeholder.com/400x300?text=Restoran";
 
-            document.getElementById('tautanWA').href = dt.nohp ? `https://wa.me/62${dt.nohp.replace(/^0/,'')}` : "#";
+            document.getElementById('tautanWA').href = nohpTeks ? `https://wa.me/62${nohpTeks.replace(/^0/,'')}` : "#";
             document.getElementById('tautanMaps').href = dt.lokasi?.startsWith("http") ? dt.lokasi : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dt.lokasi||"")}`;
 
             document.getElementById('modalDetail').classList.remove('hidden');
