@@ -5,20 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar Data Restoran</title>
     <script>
-        // Blokir akses komputer
-        function blokirKomputer() {
-            const isMobileAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            const isDesktopWidth = window.innerWidth > 1024;
-            
-            if (!isMobileAgent || !isTouchScreen || isDesktopWidth) {
-                window.location.replace("https://data-cs.vercel.app/pengalihan.html"); 
-            }
-        }
-        blokirKomputer();
-        window.addEventListener('resize', blokirKomputer);
-
-        // Blokir Inspect Element
+        // ✅ BLOKIR INSPECT & KEAMANAN SAJA — TANPA PENGALIHAN PERANGKAT
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) {
             if(e.keyCode == 123) return false;
@@ -59,7 +46,7 @@
         /* Gaya Tambahan Slider */
         .slider-track { display: flex; transition: transform 0.5s ease-in-out; }
         .slide-item { min-width: 100%; }
-        /* ✅ GAYA TABEL YANG LEBIH KEREN */
+        /* GAYA TABEL KEREN */
         .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         table { min-width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 1rem; overflow: hidden; }
         th { white-space: nowrap; font-weight: 600; font-size: 0.875rem; letter-spacing: 0.2px; }
@@ -92,12 +79,11 @@
         </div>
     </header>
 
-    <!-- ✅ BANNER SLIDER - HANYA GAMBAR -->
+    <!-- ✅ BANNER SLIDER -->
     <section class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 overflow-hidden">
         <div class="relative max-w-6xl mx-auto px-4 py-5">
             <div id="sliderContainer" class="overflow-hidden rounded-2xl shadow-md">
                 <div id="sliderTrack" class="slider-track">
-                    <!-- Ganti URL gambar di sini sesuai kebutuhan -->
                     <div class="slide-item">
                         <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
                              alt="Banner Kuliner 1" class="w-full h-40 md:h-52 object-cover">
@@ -160,7 +146,7 @@
         </div>
     </main>
 
-    <!-- ✅ FOOTER BARU: KEREN & RESPONSIF -->
+    <!-- ✅ FOOTER -->
     <footer class="bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 mt-8 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.03)]">
         <div class="container mx-auto px-4 py-10">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
@@ -173,7 +159,7 @@
                         <span class="text-lg font-bold text-slate-800 dark:text-white">Daftar Data Restoran</span>
                     </div>
                     <p class="text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto md:mx-0">
-                        Platform daftar tempat kuliner terpercaya, terhubung langsung dengan data terbaru dari Google Sheets. Tampilan dioptimalkan khusus untuk perangkat seluler.
+                        Platform daftar tempat kuliner terpercaya, terhubung langsung dengan data terbaru dari Google Sheets.
                     </p>
                 </div>
 
@@ -183,7 +169,7 @@
                     <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
                         <li><i class="fa-solid fa-check-circle text-brand-500 mr-2"></i> Data selalu diperbarui</li>
                         <li><i class="fa-solid fa-shield-halved text-brand-500 mr-2"></i> Akses aman & terkontrol</li>
-                        <li><i class="fa-solid fa-mobile-screen-button text-brand-500 mr-2"></i> Tampilan khusus HP</li>
+                        <li><i class="fa-solid fa-desktop text-brand-500 mr-2"></i> Bisa dibuka di HP & Komputer</li>
                     </ul>
                 </div>
 
@@ -215,7 +201,7 @@
         </div>
     </footer>
 
-    <!-- Modal Detail Hanya Lihat — TIDAK DIUBAH -->
+    <!-- Modal Detail -->
     <div id="modalDetail" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-700">
             <div class="relative">
@@ -254,14 +240,14 @@
     </div>
 
     <script>
-        // === LINK SCRIPT KAMU ===
+        // === LINK SCRIPT GOOGLE SHEETS ===
         const GS_URL = "https://script.google.com/macros/s/AKfycbyzHX4yTYGHYcmg-YUsssW-Btuc9EqILIZuNafijh7SeiBIQ_zL7tdax4_GVwVk4YG-Bg/exec";
 
         let semuaData = [];
         let dataTampil = [];
         let batasTampil = 6;
 
-        // ✅ LOGIKA SLIDER BANNER — TETAP SAMA
+        // ✅ LOGIKA SLIDER BANNER
         let slidePosisi = 0;
         const totalSlide = 3;
         const track = document.getElementById('sliderTrack');
@@ -294,7 +280,7 @@
             return nilai === null || nilai === undefined ? "" : String(nilai).trim();
         }
 
-        // Ubah Mode Gelap/Terang — TETAP SAMA
+        // Ubah Mode Gelap/Terang
         function toggleMode() {
             const html = document.documentElement;
             const ikon = document.getElementById('iconMode');
@@ -309,7 +295,7 @@
             }
         }
 
-        // ✅ AMBIL DATA — TETAP SAMA
+        // ✅ AMBIL DATA
         function ambilData() {
             fetch(GS_URL + "?action=read&t=" + Date.now(), { 
                 cache: 'no-store'
@@ -345,7 +331,7 @@
             });
         }
 
-        // ✅ FUNGSI TAMPILKAN TABEL — DIPERINDAH SANGAT
+        // ✅ FUNGSI TAMPILKAN TABEL
         function tampilkanTabel() {
             const wadah = document.getElementById('wadahData');
             const tombolLebih = document.getElementById('wadahTombolLebih');
@@ -413,10 +399,9 @@
             tombolLebih.classList.toggle('hidden', dataTampil.length <= batasTampil);
         }
 
-        // ✅ Ganti panggilan fungsi lama ke tampilkanTabel
         function tambahTampilan(){ batasTampil += 6; tampilkanTabel(); }
 
-        // Pencarian — LOGIKA SAMA, HANYA PANGGIL TAMPILAN BARU
+        // Pencarian
         document.getElementById('cariInput').addEventListener('input', e => {
             const kunci = e.target.value.toLowerCase().trim();
             if(!kunci) dataTampil = [...semuaData];
@@ -430,7 +415,7 @@
             tampilkanTabel();
         });
 
-        // Modal Detail — TIDAK DIUBAH
+        // Modal Detail
         function bukaModal(idCari){
             const dt = semuaData.find(x => x.id === idCari);
             if(!dt) return;
@@ -459,7 +444,7 @@
         // Muat ulang data
         function ambilUlangData(){ ambilData(); }
 
-        // ✅ Tambah Tahun Otomatis di Footer
+        // Tahun otomatis footer
         document.addEventListener("DOMContentLoaded", function(){
             ambilData();
             document.getElementById("tahunSekarang").textContent = new Date().getFullYear();
