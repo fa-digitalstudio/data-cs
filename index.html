@@ -316,7 +316,7 @@
             document.getElementById('dropdownMenu').classList.add('hidden');
             Swal.fire({
                 title: 'Sistem Terintegrasi',
-                html: '<p class="text-sm font-medium text-slate-600">Database manajemen pelanggan eksklusif yang tersinkronisasi di Cloud Server, dikhususkan untuk <b>Farid Aris</b>.</p>',
+                html: '<p class="text-sm font-medium text-slate-600">Database manajemen pelanggan eksklusif yang tersinkronisasi di Cloud Server & Penyimpanan Lokal, dikhususkan untuk <b>Farid Aris</b>.</p>',
                 icon: 'info',
                 confirmButtonColor: '#00B14F',
             });
@@ -350,7 +350,7 @@
         }
     </script>
 
-    <!-- SCRIPT UTAMA FIREBASE & CRUD -->
+    <!-- SCRIPT UTAMA FIREBASE + LOCALSTORAGE DITAMBAHKAN -->
     <script>
         // INISIALISASI FIREBASE (DIAMANKAN)
         const K1="AIzaSyBDp0uFHkL0FvZhQ2K",K2="suWVBtVM034rdtME",D="datacsgm.firebaseapp.com",U1="https://datacsgm-default-rtdb.asia-southeast1.",U2="firebasedatabase.app",P="datacsgm",S="datacsgm.firebasestorage.app",M="370220756586",A1="1:370220756586:web:f1188256adb659",A2="aaee2413",ID1="8b0ExlzkhySZ36P",ID2="bg49rtmPyupl2",E1="faridaris25@",E2="gmail.com",P1="adm",P2="in123";
@@ -360,6 +360,27 @@
         const USER_UID=ID1+ID2,USER_EMAIL=E1+E2,USER_PASSWORD=P1+P2;
 
         let dataCustomer = []; let itemsToShow = 6;
+
+        // === FUNGSI BARU: SIMPAN & AMBIL DARI LOCALSTORAGE ===
+        const STORAGE_KEY = "dataCustomerKolaka";
+
+        function simpanKeLokal(data) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (e) {
+                // Abaikan jika penyimpanan penuh/dilarang
+            }
+        }
+
+        function ambilDariLokal() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+        // ======================================================
 
         function showLoading() { document.getElementById('loadingIndicator').classList.remove('hidden'); document.getElementById('loadingIndicator').classList.add('flex'); }
         function hideLoading() { document.getElementById('loadingIndicator').classList.add('hidden'); document.getElementById('loadingIndicator').classList.remove('flex'); }
@@ -373,11 +394,25 @@
 
         function loginWithEmail() {
             showLoading(); document.getElementById('dataContainer').innerHTML = "";
+
+            // ⚡ Coba tampilkan data LOKAL DULU jika ada, agar tidak kosong saat menunggu cloud
+            const dataLokal = ambilDariLokal();
+            if (dataLokal && dataLokal.length > 0) {
+                dataCustomer = [...dataLokal];
+                loadData("");
+            }
+
             if (auth.currentUser && auth.currentUser.uid === USER_UID) { ambilDataDariFirebase(); return; }
             auth.signInWithEmailAndPassword(USER_EMAIL, USER_PASSWORD)
             .then(() => { ambilDataDariFirebase(); })
             .catch(error => {
                 hideLoading();
+                // Jika gagal login/cloud, tetap tampilkan data lokal jika belum ditampilkan
+                if (!dataCustomer.length && dataLokal) {
+                    dataCustomer = [...dataLokal];
+                    loadData("");
+                    return;
+                }
                 document.getElementById('dataContainer').innerHTML = `
                 <div class="flex flex-col items-center justify-center py-16 text-slate-500 bg-white/60 backdrop-blur rounded-[2rem] shadow-sm border border-red-100">
                     <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-lock text-4xl text-red-500"></i></div>
@@ -399,16 +434,26 @@
                         const idA = Number(a.id) || a.id; const idB = Number(b.id) || b.id;
                         return idB > idA ? 1 : -1;
                     });
+
+                    // ✅ SETIAP BERHASIL DAPAT DATA BARU → LANGSUNG DISIMPAN KE PENYIMPANAN HP
+                    simpanKeLokal(dataCustomer);
                 }
                 hideLoading(); loadData("");
             })
             .catch(error => {
                 hideLoading();
-                document.getElementById('dataContainer').innerHTML = `<div class="flex flex-col items-center justify-center py-16 bg-white/60 rounded-[2rem] shadow-sm border border-amber-100"><i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-4"></i><h3 class="text-xl font-bold">Gagal Sinkronisasi</h3></div>`;
+                // Jika gagal ambil dari cloud, pakai cadangan lokal
+                const cadangan = ambilDariLokal();
+                if (cadangan && cadangan.length > 0) {
+                    dataCustomer = cadangan;
+                    loadData("");
+                    return;
+                }
+                document.getElementById('dataContainer').innerHTML = `<div class="flex flex-col items-center justify-center py-16 bg-white/60 rounded-[2rem] shadow-sm border border-amber-100"><i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-4"></i><h3 class="text-xl font-bold">Gagal Sinkronisasi</h3><p class="text-sm mt-2">Tidak ada koneksi & tidak ada cadangan lokal</p></div>`;
             });
         }
 
-        // RENDER DATA MENJADI GRID CARD PREMIUM (Menggantikan Tabel)
+        // RENDER DATA MENJADI GRID CARD PREMIUM (Menggantikan Tabel) — TIDAK DIUBAH SAMA SEKALI
         function loadData(search = "") {
             const container = document.getElementById('dataContainer');
             const totalInfo = document.getElementById('totalData');
