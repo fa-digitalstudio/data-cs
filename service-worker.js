@@ -1,4 +1,4 @@
-const CACHE_NAME = 'buku-customer-v4';
+const CACHE_NAME = 'buku-customer-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/admin.html',
