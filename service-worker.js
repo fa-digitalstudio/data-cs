@@ -1,7 +1,7 @@
 const CACHE_NAME = 'buku-customer-v2';
 const ASSETS_TO_CACHE = [
   '/',
-  '/admin.html',
+  '/data-cs/admin.html',
   'https://cdn.tailwindcss.com',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
   'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
